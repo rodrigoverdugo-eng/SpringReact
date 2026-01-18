@@ -1,0 +1,21 @@
+/* ========================================
+   ESTILOS PRINCIPALES
+   Sistema de diseño modular
+   ======================================== */
+
+/* Base: Fundamentos del diseño */
+@import './base/variables.css';
+@import './base/reset.css';
+@import './base/typography.css';
+
+/* Layout: Estructuras de contenedores */
+@import './layout/container.css';
+
+/* Componentes: Elementos reutilizables */
+@import './components/buttons.css';
+@import './components/forms.css';
+@import './components/cards.css';
+@import './components/badges.css';
+
+/* Utilidades: Clases helper */
+@import './utils/helpers.css';

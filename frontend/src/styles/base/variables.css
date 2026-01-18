@@ -1,0 +1,54 @@
+/* ========================================
+   VARIABLES CSS - SISTEMA DE DISEÑO
+   ======================================== */
+
+:root {
+  /* Colores primarios */
+  --color-primary: #2c3e50;
+  --color-primary-dark: #1a252f;
+  --color-secondary: #718096;
+  --color-secondary-dark: #4a5568;
+  
+  /* Colores de estado */
+  --color-danger: #e53e3e;
+  --color-danger-dark: #c53030;
+  --color-info: #3182ce;
+  --color-warning: #f39c12;
+  --color-success: #38a169;
+  
+  /* Colores de texto */
+  --color-text-primary: #2c3e50;
+  --color-text-secondary: #5a6c7d;
+  --color-text-muted: #718096;
+  
+  /* Colores de fondo */
+  --color-bg-input: #fafbfc;
+  --color-bg-light: #f5f7fa;
+  
+  /* Bordes */
+  --color-border: #cbd5e0;
+  --color-border-light: #e2e8f0;
+  
+  /* Sombras */
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 4px 12px rgba(44, 62, 80, 0.15);
+  --shadow-lg: 0 10px 40px rgba(0, 0, 0, 0.1);
+  
+  /* Bordes redondeados */
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  
+  /* Espaciado */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 12px;
+  --spacing-lg: 16px;
+  --spacing-xl: 24px;
+  --spacing-2xl: 32px;
+  
+  /* Transiciones */
+  --transition-fast: 0.2s ease;
+  --transition-normal: 0.3s ease;
+  --transition-slow: 0.5s ease;
+}
