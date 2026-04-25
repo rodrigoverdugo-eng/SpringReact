@@ -24,14 +24,18 @@ Aplicación web empresarial completa con autenticación JWT, sistema de roles y 
 - **Sistema de Diseño Modular**: Variables CSS centralizadas
 - **Sidebar Colapsable**: Navegación responsive
 - **Badges de Estado**: Visualización clara del estado del usuario
-- **Mensajes Contextuales**: Notificaciones de error y éxito
+- **Toast Notifications**: Notificaciones animadas de éxito/error con auto-dismiss (4s)
+- **Diálogo de Confirmación Personalizado**: Reemplaza `window.confirm()` con modal estilizado
+- **Validación en Español**: Mensajes de validación de formularios en español
+- **Toggle Contraseña**: Botón para mostrar/ocultar la contraseña
+- **Generador de Contraseña Segura**: Genera contraseña aleatoria de 12 caracteres con botón de copiar al portapapeles
 - **Arquitectura Componetizada**: Organización por responsabilidades
 
 ## 🛠️ Stack Tecnológico
 
 ### Backend
 - **Java 21**
-- **Spring Boot 3.2.1**
+- **Spring Boot 3.4.5**
 - **Spring Security** con JWT
 - **Spring Data JPA**
 - **H2 Database** (en memoria)
@@ -41,7 +45,7 @@ Aplicación web empresarial completa con autenticación JWT, sistema de roles y 
 ### Frontend
 - **React 18.2.0**
 - **React Router DOM 7.11.0** para navegación
-- **Vite 5.0.8** como build tool
+- **Vite 7.3.2** como build tool
 - **Axios 1.6.2** para peticiones HTTP
 - **CSS Modular** con sistema de diseño
 - **Hooks Personalizados** (useInactivityLogout)
@@ -493,7 +497,7 @@ npm test
 ### Seguridad
 - [ ] Externalizar JWT secret a variables de entorno
 - [ ] Configurar HTTPS
-- [ ] Implementar rate limiting
+- [x] Implementar rate limiting (Bucket4j)
 - [ ] Agregar logs de auditoría
 - [ ] Configurar CORS para dominio de producción
 
