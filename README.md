@@ -167,7 +167,7 @@ npm install
 npm run dev
 ```
 
-El frontend estará disponible en: **`http://localhost:5173`**
+El frontend estará disponible en: **`http://localhost:3000`**
 
 ### 🔑 Credenciales por Defecto
 
