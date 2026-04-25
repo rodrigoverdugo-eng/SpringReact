@@ -60,11 +60,13 @@ SpringReact/
 │   │   │   ├── java/com/example/springreact/
 │   │   │   │   ├── SpringReactApplication.java
 │   │   │   │   ├── config/
-│   │   │   │   │   └── DataInitializer.java      # Inicialización de datos
+│   │   │   │   │   ├── DataInitializer.java      # Inicialización de datos
+│   │   │   │   │   └── RateLimitConfig.java      # Configuración rate limiting
 │   │   │   │   ├── controller/
 │   │   │   │   │   ├── AuthController.java       # Login, cambio de password
 │   │   │   │   │   ├── UserController.java       # CRUD usuarios
-│   │   │   │   │   └── RoleController.java       # Gestión de roles
+│   │   │   │   │   ├── RoleController.java       # Gestión de roles
+│   │   │   │   │   └── SpaController.java        # Soporte SPA (React Router)
 │   │   │   │   ├── model/
 │   │   │   │   │   ├── User.java                 # Entidad Usuario
 │   │   │   │   │   └── Role.java                 # Entidad Rol
@@ -74,14 +76,15 @@ SpringReact/
 │   │   │   │   └── security/
 │   │   │   │       ├── SecurityConfig.java       # Configuración seguridad
 │   │   │   │       ├── JwtService.java           # Gestión JWT
-│   │   │   │       └── JwtAuthenticationFilter.java
+│   │   │   │       ├── JwtAuthenticationFilter.java
+│   │   │   │       └── RateLimitFilter.java      # Filtro de rate limiting
 │   │   │   └── resources/
 │   │   │       └── application.properties
 │   │   └── test/
 │   └── pom.xml
 │
 └── frontend/                   # Aplicación React
-    ├── public/
+    ├── index.html
     ├── src/
     │   ├── components/
     │   │   ├── auth/                  # Componentes de autenticación
@@ -122,6 +125,7 @@ SpringReact/
     │   │   │   └── helpers.css
     │   │   └── main.css               # Importa todos los estilos
     │   ├── App.jsx
+    │   ├── index.jsx
     │   └── main.jsx
     ├── package.json
     └── vite.config.js
