@@ -55,16 +55,19 @@ function Dashboard() {
       
       <div className={`dashboard-content ${sidebarOpen ? 'sidebar-open' : 'sidebar-closed'}`}>
         <div className="dashboard-header">
-          <div className="header-title-wrapper">
-            <svg className="company-icon" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-              <polyline points="9 22 9 12 15 12 15 22"></polyline>
+          <div className="header-breadcrumb">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="breadcrumb-icon">
+              <polyline points="9 18 15 12 9 6"></polyline>
             </svg>
-            <div>
-              <h1>Sistema de Gestión</h1>
-              <p className="subtitle">
-                {viewConfig[currentView] || 'Dashboard'}
-              </p>
+            <h1>{viewConfig[currentView] || 'Dashboard'}</h1>
+          </div>
+          <div className="header-user">
+            <div className="topbar-avatar">
+              {currentUser?.name?.charAt(0).toUpperCase() || 'U'}
+            </div>
+            <div className="topbar-user-info">
+              <span className="topbar-name">{currentUser?.name}</span>
+              <span className="topbar-role">{currentUser?.role?.descripcion}</span>
             </div>
           </div>
         </div>

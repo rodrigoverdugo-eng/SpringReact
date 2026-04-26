@@ -1,10 +1,18 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import AuthService from '../../services/AuthService';
+import InfoService from '../../services/InfoService';
 import '../../styles/main.css';
 import './Sidebar.css';
 
 function Sidebar({ currentView, onViewChange, currentUser, isOpen, setIsOpen }) {
   const [expandedMenu, setExpandedMenu] = useState(null);
+  const [appVersion, setAppVersion] = useState(null);
+
+  useEffect(() => {
+    InfoService.getVersion()
+      .then(setAppVersion)
+      .catch(() => setAppVersion('?'));
+  }, []);
 
   const handleLogout = () => {
     AuthService.logout();
@@ -54,8 +62,9 @@ function Sidebar({ currentView, onViewChange, currentUser, isOpen, setIsOpen }) 
 
   return (
     <>
-      <button 
-        className={`sidebar-toggle ${isOpen ? 'sidebar-open' : 'sidebar-closed'}`}
+      {/* Botón flotante solo visible en móvil */}
+      <button
+        className="sidebar-toggle-mobile"
         onClick={() => setIsOpen(!isOpen)}
         aria-label={isOpen ? 'Cerrar menú' : 'Abrir menú'}
       >
@@ -67,32 +76,29 @@ function Sidebar({ currentView, onViewChange, currentUser, isOpen, setIsOpen }) 
       </button>
 
       <aside className={`sidebar ${isOpen ? 'open' : 'closed'}`}>
-        <div className="sidebar-header">
-          <div className="sidebar-logo">
-            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <rect x="3" y="3" width="7" height="7"></rect>
-              <rect x="14" y="3" width="7" height="7"></rect>
-              <rect x="14" y="14" width="7" height="7"></rect>
-              <rect x="3" y="14" width="7" height="7"></rect>
-            </svg>
-            {isOpen && <h2>Panel de Control</h2>}
-          </div>
-        </div>
 
-        <div className="sidebar-user">
-          {isOpen ? (
-            <>
-              <div className="user-avatar">
-                {currentUser?.name?.charAt(0).toUpperCase() || 'U'}
-              </div>
-              <div className="user-details">
-                <p className="user-name">{currentUser?.name}</p>
-                <p className="user-email">{currentUser?.email}</p>
-              </div>
-            </>
-          ) : (
-            <div className="user-avatar-small">
-              {currentUser?.name?.charAt(0).toUpperCase() || 'U'}
+        {/* 1. CABECERA: toggle integrado + logo */}
+        <div className="sidebar-header">
+          <button
+            className="sidebar-toggle-btn"
+            onClick={() => setIsOpen(!isOpen)}
+            aria-label={isOpen ? 'Cerrar menú' : 'Abrir menú'}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="3" y1="12" x2="21" y2="12"></line>
+              <line x1="3" y1="6" x2="21" y2="6"></line>
+              <line x1="3" y1="18" x2="21" y2="18"></line>
+            </svg>
+          </button>
+          {isOpen && (
+            <div className="sidebar-logo">
+              <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="3" y="3" width="7" height="7"></rect>
+                <rect x="14" y="3" width="7" height="7"></rect>
+                <rect x="14" y="14" width="7" height="7"></rect>
+                <rect x="3" y="14" width="7" height="7"></rect>
+              </svg>
+              <h2>Panel de Control</h2>
             </div>
           )}
         </div>
@@ -190,6 +196,25 @@ function Sidebar({ currentView, onViewChange, currentUser, isOpen, setIsOpen }) 
         </nav>
 
         <div className="sidebar-footer">
+          {/* Usuario */}
+          <div className="sidebar-user">
+            {isOpen ? (
+              <>
+                <div className="user-avatar">
+                  {currentUser?.name?.charAt(0).toUpperCase() || 'U'}
+                </div>
+                <div className="user-details">
+                  <p className="user-name">{currentUser?.name}</p>
+                  <p className="user-email">{currentUser?.email}</p>
+                </div>
+              </>
+            ) : (
+              <div className="user-avatar-small">
+                {currentUser?.name?.charAt(0).toUpperCase() || 'U'}
+              </div>
+            )}
+          </div>
+          {/* Cerrar sesión */}
           <button className="btn-logout-sidebar" onClick={handleLogout} title={!isOpen ? 'Cerrar sesión' : ''}>
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
@@ -198,6 +223,10 @@ function Sidebar({ currentView, onViewChange, currentUser, isOpen, setIsOpen }) 
             </svg>
             {isOpen && <span>Cerrar Sesión</span>}
           </button>
+          {/* Versión */}
+          {isOpen && appVersion && (
+            <p className="sidebar-version">v{appVersion}</p>
+          )}
         </div>
       </aside>
     </>
