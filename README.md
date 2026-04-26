@@ -22,7 +22,9 @@ Aplicación web empresarial completa con autenticación JWT, sistema de roles y 
 ### 🎨 Interfaz de Usuario
 - **Diseño Empresarial Profesional**: UI moderna y limpia
 - **Sistema de Diseño Modular**: Variables CSS centralizadas
-- **Sidebar Colapsable**: Navegación responsive
+- **Sidebar Colapsable**: Navegación responsive con toggle integrado en la cabecera
+- **Layout de Gestión**: Sidebar (logo+nav+pie usuario) + Topbar (breadcrumb + usuario/rol)
+- **Versión en Pie del Sidebar**: Número de versión del `pom.xml` mostrado en tiempo de ejecución
 - **Badges de Estado**: Visualización clara del estado del usuario
 - **Toast Notifications**: Notificaciones animadas de éxito/error con auto-dismiss (4s)
 - **Diálogo de Confirmación Personalizado**: Reemplaza `window.confirm()` con modal estilizado
@@ -66,6 +68,7 @@ SpringReact/
 │   │   │   │   │   ├── AuthController.java       # Login, cambio de password
 │   │   │   │   │   ├── UserController.java       # CRUD usuarios
 │   │   │   │   │   ├── RoleController.java       # Gestión de roles
+│   │   │   │   │   ├── InfoController.java       # Versión de la aplicación
 │   │   │   │   │   └── SpaController.java        # Soporte SPA (React Router)
 │   │   │   │   ├── model/
 │   │   │   │   │   ├── User.java                 # Entidad Usuario
@@ -106,7 +109,8 @@ SpringReact/
     │   ├── services/
     │   │   ├── AuthService.js         # Autenticación
     │   │   ├── UserService.js         # API usuarios
-    │   │   └── RoleService.js         # API roles
+    │   │   ├── RoleService.js         # API roles
+    │   │   └── InfoService.js         # Versión de la aplicación
     │   ├── hooks/
     │   │   └── useInactivityLogout.js # Hook de inactividad
     │   ├── styles/
@@ -177,6 +181,8 @@ npm run dev
 
 El frontend estará disponible en: **`http://localhost:3000`**
 
+> El build de producción (`npm run build`) genera los archivos directamente en `backend/src/main/resources/static/`, por lo que la aplicación completa se sirve desde el propio backend en el puerto 8080.
+
 ### 🔑 Credenciales por Defecto
 
 Al iniciar la aplicación, se crean automáticamente:
@@ -213,6 +219,11 @@ Al iniciar la aplicación, se crean automáticamente:
 | Método | Endpoint | Descripción | Acceso |
 |--------|----------|-------------|--------|
 | GET | `/api/roles` | Obtener todos los roles | Autenticado |
+
+### Información
+| Método | Endpoint | Descripción | Acceso |
+|--------|----------|-------------|--------|
+| GET | `/api/info/version` | Versión de la aplicación | Autenticado |
 
 ### 📝 Ejemplos de Peticiones
 
@@ -296,8 +307,8 @@ Consola H2 disponible en: **`http://localhost:8080/h2-console`**
 Al iniciar la aplicación, se crean automáticamente:
 
 **Roles:**
-- **ADMIN**: "Administrador del sistema con acceso completo"
-- **USER**: "Usuario estándar con permisos básicos"
+- **ADMIN**: "Administrador del sistema"
+- **USER**: "Usuario estándar"
 
 **Usuarios:**
 - **admin@example.com** (ADMIN, vigente, sin cambio de contraseña requerido)
@@ -342,7 +353,7 @@ El proyecto utiliza un sistema de diseño centralizado con variables CSS:
 
 ### Autenticación JWT
 
-- **Access Token**: Válido por 1 hora
+- **Access Token**: Válido por 15 minutos
 - **Refresh Token**: Válido por 7 días
 - **Roles en Token**: El rol del usuario se incluye en el JWT
 - **Encriptación**: BCrypt con fuerza 10 para contraseñas
@@ -359,9 +370,10 @@ El proyecto utiliza un sistema de diseño centralizado con variables CSS:
 ### CORS
 
 Configurado para desarrollo local:
-- Origen permitido: `http://localhost:5173`
-- Métodos: GET, POST, PUT, DELETE
-- Headers: Authorization, Content-Type
+- Orígenes permitidos: `http://localhost:3000`, `http://localhost:5173`, `http://localhost:8080`
+- Métodos: GET, POST, PUT, DELETE, OPTIONS
+- Headers: `*` (todos)
+- Credentials: habilitadas
 
 ## 🎯 Funcionalidades por Rol
 
@@ -388,13 +400,27 @@ Configurado para desarrollo local:
 # Puerto del servidor
 server.port=8080
 
-# Base de datos H2
+# Configuración de H2 Database
 spring.datasource.url=jdbc:h2:mem:testdb
+spring.datasource.driverClassName=org.h2.Driver
+spring.datasource.username=sa
+spring.datasource.password=
+
+# Consola H2
 spring.h2.console.enabled=true
+spring.h2.console.path=/h2-console
 
 # JPA/Hibernate
-spring.jpa.hibernate.ddl-auto=update
+spring.jpa.database-platform=org.hibernate.dialect.H2Dialect
+spring.jpa.hibernate.ddl-auto=create
 spring.jpa.show-sql=true
+
+# Versión de la aplicación (inyectada desde pom.xml por Maven)
+app.version=@project.version@
+
+# Rate Limiting
+rate-limit.max-attempts=5
+rate-limit.refill-minutes=1
 ```
 
 ### Frontend
@@ -403,8 +429,12 @@ spring.jpa.show-sql=true
 ```javascript
 export default defineConfig({
   plugins: [react()],
+  build: {
+    outDir: '../backend/src/main/resources/static',
+    emptyOutDir: true,
+  },
   server: {
-    port: 5173,
+    port: 3000,
     proxy: {
       '/api': {
         target: 'http://localhost:8080',
@@ -474,8 +504,8 @@ npm test
 ### Componentes Principales
 
 **Frontend:**
-- `Dashboard.jsx`: Contenedor principal con gestión de vistas
-- `Sidebar.jsx`: Navegación lateral con filtrado por roles
+- `Dashboard.jsx`: Contenedor principal con gestión de vistas y topbar (breadcrumb + usuario)
+- `Sidebar.jsx`: Navegación lateral con toggle integrado, filtrado por roles, usuario y versión en el pie
 - `UserManagement.jsx`: CRUD de usuarios con validaciones
 - `RoleManagement.jsx`: Vista de roles del sistema
 - `Login.jsx`: Formulario de autenticación
@@ -486,6 +516,7 @@ npm test
 - `AuthController.java`: Endpoints de autenticación
 - `UserController.java`: CRUD de usuarios con validaciones
 - `RoleController.java`: Endpoints de roles
+- `InfoController.java`: Expone la versión del `pom.xml` vía `/api/info/version`
 - `SecurityConfig.java`: Configuración de seguridad Spring
 - `JwtService.java`: Generación y validación de tokens
 - `DataInitializer.java`: Inicialización de datos por defecto
