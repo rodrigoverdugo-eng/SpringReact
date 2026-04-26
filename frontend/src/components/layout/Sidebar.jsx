@@ -41,7 +41,12 @@ function Sidebar({ currentView, onViewChange, currentUser, isOpen, setIsOpen }) 
 
   const handleMenuClick = (item) => {
     if (item.submenu && item.submenu.length > 0) {
-      toggleSubmenu(item.id);
+      if (!isOpen) {
+        setIsOpen(true);
+        setExpandedMenu(item.id);
+      } else {
+        toggleSubmenu(item.id);
+      }
     } else {
       onViewChange(item.id);
     }

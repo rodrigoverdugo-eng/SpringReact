@@ -6,7 +6,7 @@ import '../../styles/main.css';
 function UserManagement() {
   const [users, setUsers] = useState([]);
   const [roles, setRoles] = useState([]);
-  const [formData, setFormData] = useState({ name: '', email: '', password: '', vigencia: true, role: null });
+  const [formData, setFormData] = useState({ name: '', email: '', password: '', vigencia: true, requiresPasswordChange: true, role: null });
   const [editingId, setEditingId] = useState(null);
   const [loading, setLoading] = useState(false);
   const [toasts, setToasts] = useState([]);
@@ -141,13 +141,13 @@ function UserManagement() {
       if (editingId) {
         await UserService.updateUser(editingId, formData);
         setEditingId(null);
-        setFormData({ name: '', email: '', password: '', vigencia: true, role: null });
+        setFormData({ name: '', email: '', password: '', vigencia: true, requiresPasswordChange: true, role: null });
         setIsModalOpen(false);
         loadUsers();
         showToast('success', 'Usuario actualizado', `${formData.name} fue actualizado correctamente`);
       } else {
         await UserService.createUser(formData);
-        setFormData({ name: '', email: '', password: '', vigencia: true, role: null });
+        setFormData({ name: '', email: '', password: '', vigencia: true, requiresPasswordChange: true, role: null });
         setIsModalOpen(false);
         loadUsers();
         showToast('success', 'Usuario creado', `${formData.name} fue agregado correctamente`);
@@ -187,7 +187,7 @@ function UserManagement() {
   };
 
   const handleCancel = () => {
-    setFormData({ name: '', email: '', password: '', vigencia: true, role: null });
+    setFormData({ name: '', email: '', password: '', vigencia: true, requiresPasswordChange: true, role: null });
     setEditingId(null);
     setModalError('');
     setShowPassword(false);
@@ -196,7 +196,7 @@ function UserManagement() {
   };
 
   const openModal = () => {
-    setFormData({ name: '', email: '', password: '', vigencia: true, role: null });
+    setFormData({ name: '', email: '', password: '', vigencia: true, requiresPasswordChange: true, role: null });
     setEditingId(null);
     setModalError('');
     setShowPassword(false);
@@ -205,7 +205,7 @@ function UserManagement() {
   };
 
   const handleEditOpen = (user) => {
-    setFormData({ name: user.name, email: user.email, password: '', vigencia: user.vigencia, role: user.role });
+    setFormData({ name: user.name, email: user.email, password: '', vigencia: user.vigencia, requiresPasswordChange: user.requiresPasswordChange ?? true, role: user.role });
     setEditingId(user.id);
     setModalError('');
     setShowPassword(false);
@@ -335,6 +335,7 @@ function UserManagement() {
                           <th>Email</th>
                           <th>Rol</th>
                           <th>Estado</th>
+                          <th>Contraseña</th>
                           <th className="actions-column">Acciones</th>
                         </tr>
                       </thead>
@@ -349,6 +350,11 @@ function UserManagement() {
                             <td data-label="Estado">
                               <span className={`badge ${user.vigencia ? 'badge-success' : 'badge-inactive'}`}>
                                 {user.vigencia ? 'Activo' : 'Inactivo'}
+                              </span>
+                            </td>
+                            <td data-label="Contraseña">
+                              <span className={`badge ${user.requiresPasswordChange ? 'badge-warning' : 'badge-success'}`}>
+                                {user.requiresPasswordChange ? 'Cambio requerido' : 'Al día'}
                               </span>
                             </td>
                             <td data-label="Acciones" className="actions-column">
@@ -598,6 +604,22 @@ function UserManagement() {
               </span>
             </div>
           </div>
+          <div className="form-group">
+              <label>Cambio de contraseña obligatorio</label>
+              <div className="toggle-switch-container">
+                <label className="toggle-switch">
+                  <input
+                    type="checkbox"
+                    checked={formData.requiresPasswordChange}
+                    onChange={(e) => setFormData({ ...formData, requiresPasswordChange: e.target.checked })}
+                  />
+                  <span className="toggle-slider"></span>
+                </label>
+                <span className={`toggle-label ${formData.requiresPasswordChange ? 'inactive' : 'active'}`}>
+                  {formData.requiresPasswordChange ? 'Debe cambiar contraseña' : 'Sin cambio requerido'}
+                </span>
+              </div>
+            </div>
           <div className="button-group">
             <button type="submit" className="btn btn-primary">
               {editingId ? 'Actualizar' : 'Agregar'}
