@@ -21,7 +21,11 @@
   --color-text-secondary: #5a6c7d;
   --color-text-muted: #718096;
   
-  /* Colores de fondo */
+  /* Fondos semánticos */
+  --color-bg-primary: #ffffff;
+  --color-bg-page: #f5f7fa;
+  --color-bg-elevated: #f8f9fa;
+  --color-bg-subtle: #f7fafc;
   --color-bg-input: #fafbfc;
   --color-bg-light: #f5f7fa;
   
@@ -51,4 +55,144 @@
   --transition-fast: 0.2s ease;
   --transition-normal: 0.3s ease;
   --transition-slow: 0.5s ease;
+
+  /* Navegación lateral */
+  --color-nav-hover-bg: #f5f7fa;
+  --color-nav-active-bg: #ebf8ff;
+  --color-nav-active-text: #3182ce;
+  --color-nav-active-border: #3182ce;
+  --color-submenu-item-hover: #e2e8f0;
+
+  /* Botones de acción de tabla */
+  --color-btn-edit-bg: #ebf8ff;
+  --color-btn-edit-text: #2c5282;
+  --color-btn-edit-border: #bee3f8;
+  --color-btn-delete-bg: #fff5f5;
+  --color-btn-delete-text: #c53030;
+  --color-btn-delete-border: #fed7d7;
+  --color-btn-activity-bg: #f0fff4;
+  --color-btn-activity-text: #276749;
+  --color-btn-activity-border: #c6f6d5;
+
+  /* Logout */
+  --color-logout-bg: #fff5f5;
+
+  /* Tabla */
+  --color-table-bg: #ffffff;
+  --color-table-header-bg: #f7fafc;
+  --color-table-row-hover: #f7fafc;
+
+  /* Modal / diálogo */
+  --color-modal-bg: #ffffff;
+  --color-modal-close-hover: #f7fafc;
+  --color-confirm-bg: #ffffff;
+  --color-confirm-icon-bg: #fff5f5;
+
+  /* Toggle switch */
+  --color-toggle-inactive: #cbd5e0;
+  --color-toggle-inactive-hover: #a0aec0;
+  --color-toggle-slider: #ffffff;
+
+  /* Info block */
+  --color-users-info-bg: #f7fafc;
+
+  /* Colores de enlace/acento de marca */
+  --color-link: #667eea;
+  --color-link-hover: #764ba2;
+
+  /* Gradiente auth */
+  --color-auth-gradient-start: #f5f7fa;
+  --color-auth-gradient-end: #c3cfe2;
+
+  /* Mensajes de estado */
+  --color-error-bg: #fff5f5;
+  --color-error-text: #c53030;
+  --color-error-border: #fed7d7;
+  --color-success-bg: #f0fff4;
+  --color-success-text: #22543d;
+  --color-success-border: #c6f6d5;
+  --color-warning-bg: #fffbeb;
+  --color-warning-text: #92400e;
+  --color-warning-border: #fde68a;
+}
+
+/* ========================================
+   TEMA OSCURO
+   ======================================== */
+
+[data-theme="dark"] {
+  --color-bg-primary: #1e2433;
+  --color-bg-page: #141824;
+  --color-bg-light: #141824;
+  --color-bg-elevated: #252d3d;
+  --color-bg-subtle: #1e2433;
+  --color-bg-input: #252d3d;
+
+  --color-border: #3a4558;
+  --color-border-light: #2d3748;
+
+  --color-text-primary: #e2e8f0;
+  --color-text-secondary: #a0aec0;
+  --color-text-muted: #718096;
+
+  /* Colores primarios adaptados al dark */
+  --color-primary: #4299e1;
+  --color-primary-dark: #3182ce;
+  --color-secondary: #718096;
+  --color-secondary-dark: #4a5568;
+
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 10px 40px rgba(0, 0, 0, 0.6);
+
+  --color-nav-hover-bg: #2d3748;
+  --color-nav-active-bg: #1a365d;
+  --color-nav-active-text: #63b3ed;
+  --color-nav-active-border: #63b3ed;
+  --color-submenu-item-hover: #2d3748;
+
+  --color-btn-edit-bg: #1a365d;
+  --color-btn-edit-text: #90cdf4;
+  --color-btn-edit-border: #2c5282;
+  --color-btn-delete-bg: #2d1515;
+  --color-btn-delete-text: #fc8181;
+  --color-btn-delete-border: #742a2a;
+  --color-btn-activity-bg: #1c4532;
+  --color-btn-activity-text: #9ae6b4;
+  --color-btn-activity-border: #276749;
+
+  --color-logout-bg: #2d1515;
+
+  --color-table-bg: #1e2433;
+  --color-table-header-bg: #252d3d;
+  --color-table-row-hover: #252d3d;
+
+  --color-modal-bg: #1e2433;
+  --color-modal-close-hover: #252d3d;
+  --color-confirm-bg: #1e2433;
+  --color-confirm-icon-bg: #2d1515;
+
+  --color-toggle-inactive: #4a5568;
+  --color-toggle-inactive-hover: #718096;
+  --color-toggle-slider: #e2e8f0;
+
+  --color-users-info-bg: #252d3d;
+
+  --color-auth-gradient-start: #1a202c;
+  --color-auth-gradient-end: #2d3748;
+
+  /* Colores de enlace/acento de marca */
+  --color-link: #818cf8;
+  --color-link-hover: #a78bfa;
+
+  /* Mensajes de estado */
+  --color-error-bg: #2d1515;
+  --color-error-text: #fc8181;
+  --color-error-border: #742a2a;
+  --color-success-bg: #1c4532;
+  --color-success-text: #9ae6b4;
+  --color-success-border: #276749;
+  --color-warning-bg: #2d2006;
+  --color-warning-text: #fbd38d;
+  --color-warning-border: #744210;
 }

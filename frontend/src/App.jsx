@@ -4,9 +4,11 @@ import Login from './components/auth/Login';
 import Dashboard from './components/pages/Dashboard';
 import ChangePassword from './components/auth/ChangePassword';
 import PrivateRoute from './components/common/PrivateRoute';
+import { ThemeProvider } from './context/ThemeContext';
 
 function App() {
   return (
+    <ThemeProvider>
     <Router>
       <Routes>
         <Route path="/login" element={<Login />} />
@@ -30,6 +32,7 @@ function App() {
         <Route path="*" element={<Navigate to="/login" />} />
       </Routes>
     </Router>
+    </ThemeProvider>
   );
 }
 

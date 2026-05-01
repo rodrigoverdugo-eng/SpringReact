@@ -30,7 +30,9 @@ function RoleManagement() {
       {error && <div className="error-message">{error}</div>}
 
       <div className="users-card">
-        <h2>Lista de Roles</h2>
+        <div className="header-title-row">
+          <h2>Lista de Roles</h2>
+        </div>
         {loading ? (
           <p className="loading">Cargando...</p>
         ) : roles.length === 0 ? (

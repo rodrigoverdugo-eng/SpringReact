@@ -560,7 +560,7 @@ function UserManagement() {
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
               autoComplete="email"
               disabled={!!editingId}
-              style={editingId ? { backgroundColor: '#f0f0f0', cursor: 'not-allowed' } : {}}
+              style={editingId ? { backgroundColor: 'var(--color-border-light)', cursor: 'not-allowed' } : {}}
               maxLength={100}
             />
           </div>

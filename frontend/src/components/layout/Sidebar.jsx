@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import AuthService from '../../services/AuthService';
 import InfoService from '../../services/InfoService';
+import { useTheme } from '../../context/ThemeContext';
 import '../../styles/main.css';
 import './Sidebar.css';
 
 function Sidebar({ currentView, onViewChange, currentUser, isOpen, setIsOpen }) {
   const [expandedMenu, setExpandedMenu] = useState(null);
   const [appVersion, setAppVersion] = useState(null);
+  const { isDark, toggleTheme } = useTheme();
 
   useEffect(() => {
     InfoService.getVersion()
@@ -77,7 +79,7 @@ function Sidebar({ currentView, onViewChange, currentUser, isOpen, setIsOpen }) 
 
       <aside className={`sidebar ${isOpen ? 'open' : 'closed'}`}>
 
-        {/* 1. CABECERA: toggle integrado + logo */}
+        {/* 1. CABECERA: toggle integrado + logo + tema */}
         <div className="sidebar-header">
           <button
             className="sidebar-toggle-btn"
@@ -101,6 +103,30 @@ function Sidebar({ currentView, onViewChange, currentUser, isOpen, setIsOpen }) 
               <h2>Panel de Control</h2>
             </div>
           )}
+          <button
+            className="theme-toggle-btn"
+            onClick={toggleTheme}
+            aria-label={isDark ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
+            title={isDark ? 'Modo claro' : 'Modo oscuro'}
+          >
+            {isDark ? (
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="5"></circle>
+                <line x1="12" y1="1" x2="12" y2="3"></line>
+                <line x1="12" y1="21" x2="12" y2="23"></line>
+                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                <line x1="1" y1="12" x2="3" y2="12"></line>
+                <line x1="21" y1="12" x2="23" y2="12"></line>
+                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+              </svg>
+            ) : (
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+              </svg>
+            )}
+          </button>
         </div>
 
         <nav className="sidebar-nav">
@@ -195,25 +221,7 @@ function Sidebar({ currentView, onViewChange, currentUser, isOpen, setIsOpen }) 
           ))}
         </nav>
 
-        <div className="sidebar-footer">
-          {/* Usuario */}
-          <div className="sidebar-user">
-            {isOpen ? (
-              <>
-                <div className="user-avatar">
-                  {currentUser?.name?.charAt(0).toUpperCase() || 'U'}
-                </div>
-                <div className="user-details">
-                  <p className="user-name">{currentUser?.name}</p>
-                  <p className="user-email">{currentUser?.email}</p>
-                </div>
-              </>
-            ) : (
-              <div className="user-avatar-small">
-                {currentUser?.name?.charAt(0).toUpperCase() || 'U'}
-              </div>
-            )}
-          </div>
+        <div className="sidebar-footer">          
           {/* Cerrar sesión */}
           <button className="btn-logout-sidebar" onClick={handleLogout} title={!isOpen ? 'Cerrar sesión' : ''}>
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
