@@ -2,11 +2,17 @@ package com.example.springreact.controller;
 
 import com.example.springreact.model.Role;
 import com.example.springreact.model.User;
+import com.example.springreact.model.UserLoginHistory;
 import com.example.springreact.repository.RoleRepository;
+import com.example.springreact.repository.UserLoginHistoryRepository;
 import com.example.springreact.repository.UserRepository;
+import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.lang.NonNull;
@@ -21,6 +27,7 @@ public class UserController {
   private final UserRepository userRepository;
   private final RoleRepository roleRepository;
   private final PasswordEncoder passwordEncoder;
+  private final UserLoginHistoryRepository loginHistoryRepository;
 
   // Obtener todos los usuarios
   @GetMapping
@@ -120,5 +127,49 @@ public class UserController {
               return ResponseEntity.ok().build();
             })
         .orElse(ResponseEntity.notFound().build());
+  }
+
+  // Historial de logins de un usuario (últimos 20)
+  @GetMapping("/{id}/login-history")
+  public ResponseEntity<?> getLoginHistory(@PathVariable @NonNull Long id) {
+    if (!userRepository.existsById(id)) {
+      return ResponseEntity.notFound().build();
+    }
+    List<UserLoginHistory> history =
+        loginHistoryRepository.findByUserIdOrderByLoginAtDesc(id, PageRequest.of(0, 20));
+    List<Map<String, Object>> result =
+        history.stream()
+            .map(
+                h -> {
+                  Map<String, Object> item = new HashMap<>();
+                  item.put("id", h.getId());
+                  item.put("loginAt", h.getLoginAt());
+                  item.put("ipAddress", h.getIpAddress());
+                  return item;
+                })
+            .collect(Collectors.toList());
+    return ResponseEntity.ok(result);
+  }
+
+  // Último acceso de todos los usuarios
+  @GetMapping("/last-login")
+  public ResponseEntity<?> getAllLastLogins() {
+    List<Object[]> rows = loginHistoryRepository.findLastLoginPerUser();
+    Map<Long, LocalDateTime> lastLoginMap = new HashMap<>();
+    for (Object[] row : rows) {
+      lastLoginMap.put((Long) row[0], (LocalDateTime) row[1]);
+    }
+    List<User> users = userRepository.findAll();
+    List<Map<String, Object>> result =
+        users.stream()
+            .map(
+                u -> {
+                  Map<String, Object> item = new HashMap<>();
+                  item.put("userId", u.getId());
+                  item.put("lastLoginAt", lastLoginMap.get(u.getId()));
+                  return item;
+                })
+            .collect(Collectors.toList());
+    return ResponseEntity.ok(result);
   }
 }

@@ -68,6 +68,11 @@ function Dashboard() {
             <div className="topbar-user-info">
               <span className="topbar-name">{currentUser?.name}</span>
               <span className="topbar-role">{currentUser?.role?.descripcion}</span>
+              {currentUser?.lastLoginAt && (
+                <span className="topbar-last-login" title="Último acceso">
+                  Último acceso: {new Date(currentUser.lastLoginAt).toLocaleString('es-ES')}
+                </span>
+              )}
             </div>
           </div>
         </div>
@@ -91,7 +96,13 @@ function Dashboard() {
                 <div className="profile-info">
                   <p><strong>Nombre:</strong> {currentUser?.name}</p>
                   <p><strong>Email:</strong> {currentUser?.email}</p>
-                  <p><strong>Rol:</strong> {currentUser?.role?.descripcion}</p>                  
+                  <p><strong>Rol:</strong> {currentUser?.role?.descripcion}</p>
+                  <p>
+                    <strong>Último acceso:</strong>{' '}
+                    {currentUser?.lastLoginAt
+                      ? new Date(currentUser.lastLoginAt).toLocaleString('es-ES')
+                      : 'No disponible'}
+                  </p>
                 </div>
               </div>
             </div>

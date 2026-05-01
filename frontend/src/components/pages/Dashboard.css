@@ -90,6 +90,12 @@
   line-height: 1.2;
 }
 
+.topbar-last-login {
+  font-size: 0.7em;
+  color: #a0aec0;
+  line-height: 1.2;
+}
+
 .profile-info {
   padding: 20px 0;
 }

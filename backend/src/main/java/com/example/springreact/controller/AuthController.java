@@ -1,8 +1,12 @@
 package com.example.springreact.controller;
 
 import com.example.springreact.model.User;
+import com.example.springreact.model.UserLoginHistory;
+import com.example.springreact.repository.UserLoginHistoryRepository;
 import com.example.springreact.repository.UserRepository;
 import com.example.springreact.security.JwtService;
+import jakarta.servlet.http.HttpServletRequest;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -19,12 +23,14 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
 
   private final UserRepository userRepository;
+  private final UserLoginHistoryRepository loginHistoryRepository;
   private final JwtService jwtService;
   private final PasswordEncoder passwordEncoder;
 
   // Login
   @PostMapping("/login")
-  public ResponseEntity<?> login(@RequestBody @NonNull Map<String, String> credentials) {
+  public ResponseEntity<?> login(
+      @RequestBody @NonNull Map<String, String> credentials, HttpServletRequest request) {
     String email = credentials.get("email");
     String password = credentials.get("password");
 
@@ -49,6 +55,16 @@ public class AuthController {
           .body(Map.of("message", "Credenciales inválidas"));
     }
 
+    // Obtener el último acceso previo antes de registrar el nuevo
+    LocalDateTime now = LocalDateTime.now();
+    Optional<UserLoginHistory> previousLogin =
+        loginHistoryRepository.findTopByUserIdOrderByLoginAtDesc(user.getId());
+    LocalDateTime lastLoginAt = previousLogin.map(UserLoginHistory::getLoginAt).orElse(now);
+
+    // Registrar el nuevo login
+    String ipAddress = getClientIp(request);
+    loginHistoryRepository.save(new UserLoginHistory(user, now, ipAddress));
+
     // Generar tokens JWT con el rol incluido
     String accessToken =
         jwtService.generateAccessToken(
@@ -65,6 +81,7 @@ public class AuthController {
     response.put("refreshToken", refreshToken);
     response.put("requiresPasswordChange", user.getRequiresPasswordChange());
     response.put("vigencia", user.getVigencia());
+    response.put("lastLoginAt", lastLoginAt);
     response.put("message", "Login exitoso");
 
     return ResponseEntity.ok(response);
@@ -161,5 +178,13 @@ public class AuthController {
     userRepository.save(user);
 
     return ResponseEntity.ok(Map.of("message", "Contraseña actualizada exitosamente"));
+  }
+
+  private String getClientIp(HttpServletRequest request) {
+    String forwarded = request.getHeader("X-Forwarded-For");
+    if (forwarded != null && !forwarded.isBlank()) {
+      return forwarded.split(",")[0].trim();
+    }
+    return request.getRemoteAddr();
   }
 }

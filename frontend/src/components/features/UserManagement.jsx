@@ -22,6 +22,12 @@ function UserManagement() {
   const [showPassword, setShowPassword] = useState(false);
   const [passwordCopied, setPasswordCopied] = useState(false);
 
+  // Estado para modal de actividad
+  const [activityModal, setActivityModal] = useState({ open: false, userName: '', history: [], loading: false });
+
+  // Último acceso por userId
+  const [lastLogins, setLastLogins] = useState({});
+
   const generatePassword = () => {
     const upper = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
     const lower = 'abcdefghijklmnopqrstuvwxyz';
@@ -76,7 +82,19 @@ function UserManagement() {
   useEffect(() => {
     loadUsers();
     loadRoles();
+    loadLastLogins();
   }, []);
+
+  const loadLastLogins = async () => {
+    try {
+      const data = await UserService.getAllLastLogins();
+      const map = {};
+      data.forEach(item => { map[item.userId] = item.lastLoginAt; });
+      setLastLogins(map);
+    } catch (err) {
+      console.error('Error al cargar últimos accesos:', err);
+    }
+  };
 
   const loadRoles = async () => {
     try {
@@ -94,6 +112,8 @@ function UserManagement() {
       setLoading(true);
       const data = await UserService.getAllUsers();
       setUsers(data);
+      // Refrescar últimos accesos también
+      loadLastLogins();
     } catch (err) {
       if (err.response?.status !== 401) {
         showToast('error', 'Error', 'No se pudieron cargar los usuarios');
@@ -184,6 +204,21 @@ function UserManagement() {
 
   const cancelDelete = () => {
     setConfirmDialog({ open: false, userId: null, userName: '' });
+  };
+
+  const openActivityModal = async (user) => {
+    setActivityModal({ open: true, userName: user.name, history: [], loading: true });
+    try {
+      const data = await UserService.getLoginHistory(user.id);
+      setActivityModal({ open: true, userName: user.name, history: data, loading: false });
+    } catch (err) {
+      setActivityModal({ open: true, userName: user.name, history: [], loading: false });
+      console.error('Error al cargar historial:', err);
+    }
+  };
+
+  const closeActivityModal = () => {
+    setActivityModal({ open: false, userName: '', history: [], loading: false });
   };
 
   const handleCancel = () => {
@@ -336,6 +371,7 @@ function UserManagement() {
                           <th>Rol</th>
                           <th>Estado</th>
                           <th>Contraseña</th>
+                          <th>Último acceso</th>
                           <th className="actions-column">Acciones</th>
                         </tr>
                       </thead>
@@ -357,6 +393,11 @@ function UserManagement() {
                                 {user.requiresPasswordChange ? 'Cambio requerido' : 'Al día'}
                               </span>
                             </td>
+                            <td data-label="Último acceso">
+                              {lastLogins[user.id]
+                                ? new Date(lastLogins[user.id]).toLocaleString('es-ES')
+                                : <span className="text-muted">Sin accesos</span>}
+                            </td>
                             <td data-label="Acciones" className="actions-column">
                               <div className="action-buttons">
                                 <button 
@@ -368,6 +409,17 @@ function UserManagement() {
                                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                     <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
                                     <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                                  </svg>
+                                </button>
+                                <button 
+                                  className="btn-action btn-activity" 
+                                  onClick={() => openActivityModal(user)} 
+                                  title="Ver actividad"
+                                  aria-label="Ver actividad"
+                                >
+                                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                    <polyline points="12 6 12 12 16 14"></polyline>
                                   </svg>
                                 </button>
                                 <button 
@@ -631,6 +683,50 @@ function UserManagement() {
             )}
           </div>
         </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {activityModal.open && (
+        <div className="modal-overlay" onClick={closeActivityModal}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '560px' }}>
+            <div className="modal-header">
+              <h2>Actividad — {activityModal.userName}</h2>
+              <button className="modal-close" onClick={closeActivityModal}>
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="18" y1="6" x2="6" y2="18"></line>
+                  <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+              </button>
+            </div>
+            <div className="modal-body">
+              {activityModal.loading ? (
+                <p className="loading">Cargando historial...</p>
+              ) : activityModal.history.length === 0 ? (
+                <p className="text-muted">No hay registros de acceso para este usuario.</p>
+              ) : (
+                <div className="table-container">
+                  <table className="users-table">
+                    <thead>
+                      <tr>
+                        <th>#</th>
+                        <th>Fecha y hora</th>
+                        <th>IP</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {activityModal.history.map((entry, index) => (
+                        <tr key={entry.id}>
+                          <td>{index + 1}</td>
+                          <td>{new Date(entry.loginAt).toLocaleString('es-ES')}</td>
+                          <td>{entry.ipAddress || '—'}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </div>
           </div>
         </div>

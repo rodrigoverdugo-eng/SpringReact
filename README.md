@@ -576,14 +576,6 @@ npm test
 - Ejecuta `npm run dev` nuevamente
 - Limpia caché del navegador
 
-## 📞 Soporte
-
-Para reportar bugs o solicitar nuevas características, por favor abre un issue en el repositorio.
-
 ## 📄 Licencia
 
 Este proyecto es de código abierto y está disponible bajo la licencia MIT.
-
----
-
-**Desarrollado con ❤️ usando Spring Boot y React**

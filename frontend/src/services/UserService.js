@@ -22,6 +22,14 @@ class UserService {
   deleteUser(id) {
     return axios.delete(`${API_URL}/${id}`);
   }
+
+  getAllLastLogins() {
+    return axios.get(`${API_URL}/last-login`).then(response => response.data);
+  }
+
+  getLoginHistory(id) {
+    return axios.get(`${API_URL}/${id}/login-history`).then(response => response.data);
+  }
 }
 
 export default new UserService();

@@ -141,6 +141,19 @@
   box-shadow: 0 3px 8px rgba(229, 62, 62, 0.3);
 }
 
+.btn-activity {
+  background: #f0fff4;
+  color: #276749;
+  border: 1px solid #c6f6d5;
+}
+
+.btn-activity:hover {
+  background: #38a169;
+  color: white;
+  border-color: #38a169;
+  box-shadow: 0 3px 8px rgba(56, 161, 105, 0.3);
+}
+
 /* Botones de iconos (legacy) */
 .btn-icon {
   min-width: 70px;

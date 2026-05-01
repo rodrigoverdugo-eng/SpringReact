@@ -14,7 +14,7 @@
     
     <groupId>com.example</groupId>
     <artifactId>springreact-backend</artifactId>
-    <version>1.0.1-SNAPSHOT</version>
+    <version>1.0.1</version>
     <name>SpringReact Backend</name>
     <description>Backend API with Spring Boot</description>
     
