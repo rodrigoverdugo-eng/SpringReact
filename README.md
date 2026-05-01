@@ -11,6 +11,8 @@ Aplicación web empresarial completa con autenticación JWT, sistema de roles y 
 - **Logout Automático**: Por inactividad (15 minutos)
 - **Rutas Protegidas**: Componentes protegidos con PrivateRoute
 - **Validación de Usuario Activo**: Campo "vigencia" para activar/desactivar usuarios
+- **Registro de Actividad**: Cada login registra fecha/hora e IP del cliente
+- **Último Acceso en Login**: La respuesta del login incluye la fecha del acceso anterior (`lastLoginAt`)
 
 ### 👥 Gestión de Usuarios
 - **CRUD Completo**: Crear, leer, actualizar y eliminar usuarios
@@ -18,6 +20,8 @@ Aplicación web empresarial completa con autenticación JWT, sistema de roles y 
 - **Email Único**: Validación frontend y backend
 - **Estados de Usuario**: Activo/Inactivo con badges visuales
 - **Restricción de Acceso**: Solo ADMIN puede gestionar usuarios
+- **Historial de Actividad**: Modal para ver los últimos 20 logins de cada usuario (fecha + IP)
+- **Último Acceso Global**: Columna de último acceso visible en la tabla de usuarios
 
 ### 🎨 Interfaz de Usuario
 - **Diseño Empresarial Profesional**: UI moderna y limpia
@@ -37,7 +41,7 @@ Aplicación web empresarial completa con autenticación JWT, sistema de roles y 
 
 ### Backend
 - **Java 21**
-- **Spring Boot 3.4.5**
+- **Spring Boot 3.4.5** (v1.0.1)
 - **Spring Security** con JWT
 - **Spring Data JPA**
 - **H2 Database** (en memoria)
@@ -72,10 +76,12 @@ SpringReact/
 │   │   │   │   │   └── SpaController.java        # Soporte SPA (React Router)
 │   │   │   │   ├── model/
 │   │   │   │   │   ├── User.java                 # Entidad Usuario
-│   │   │   │   │   └── Role.java                 # Entidad Rol
+│   │   │   │   │   ├── Role.java                 # Entidad Rol
+│   │   │   │   │   └── UserLoginHistory.java     # Entidad historial de logins
 │   │   │   │   ├── repository/
 │   │   │   │   │   ├── UserRepository.java
-│   │   │   │   │   └── RoleRepository.java
+│   │   │   │   │   ├── RoleRepository.java
+│   │   │   │   │   └── UserLoginHistoryRepository.java
 │   │   │   │   └── security/
 │   │   │   │       ├── SecurityConfig.java       # Configuración seguridad
 │   │   │   │       ├── JwtService.java           # Gestión JWT
@@ -157,7 +163,7 @@ mvn spring-boot:run
 O si prefieres compilar y ejecutar el JAR:
 ```bash
 mvn clean package
-java -jar target/springreact-backend-0.0.1-SNAPSHOT.jar
+java -jar target/springreact-backend-1.0.1.jar
 ```
 
 El backend estará disponible en: **`http://localhost:8080`**
@@ -214,6 +220,8 @@ Al iniciar la aplicación, se crean automáticamente:
 | POST | `/api/users` | Crear nuevo usuario | ADMIN |
 | PUT | `/api/users/{id}` | Actualizar usuario | ADMIN |
 | DELETE | `/api/users/{id}` | Eliminar usuario | ADMIN |
+| GET | `/api/users/{id}/login-history` | Últimos 20 logins del usuario | ADMIN |
+| GET | `/api/users/last-login` | Último acceso de todos los usuarios | ADMIN |
 
 ### Roles
 | Método | Endpoint | Descripción | Acceso |
@@ -241,6 +249,9 @@ POST /api/auth/login
 {
   "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
   "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "lastLoginAt": "2026-04-30T10:23:45",
+  "requiresPasswordChange": false,
+  "vigencia": true,
   "user": {
     "id": 1,
     "name": "Administrador",
@@ -294,6 +305,14 @@ Consola H2 disponible en: **`http://localhost:8080/h2-console`**
 | requires_password_change | BOOLEAN | Requiere cambio de contraseña |
 | vigencia | BOOLEAN | Usuario activo/inactivo |
 | role_id | BIGINT | FK a tabla roles |
+
+**Tabla: user_login_history**
+| Campo | Tipo | Descripción |
+|-------|------|-------------|
+| id | BIGINT | ID autoincremental |
+| user_id | BIGINT | FK a tabla users |
+| login_at | TIMESTAMP | Fecha y hora del login |
+| ip_address | VARCHAR(45) | IP del cliente (soporta IPv6) |
 
 **Tabla: roles**
 | Campo | Tipo | Descripción |
@@ -372,7 +391,9 @@ El proyecto utiliza un sistema de diseño centralizado con variables CSS:
 Configurado para desarrollo local:
 - Orígenes permitidos: `http://localhost:3000`, `http://localhost:5173`, `http://localhost:8080`
 - Métodos: GET, POST, PUT, DELETE, OPTIONS
-- Headers: `*` (todos)
+- Headers permitidos: `Authorization`, `Content-Type`, `Accept`, `X-Requested-With`
+- Headers expuestos: `Authorization`
+- Scope: solo rutas `/api/**`
 - Credentials: habilitadas
 
 ## 🎯 Funcionalidades por Rol
@@ -382,6 +403,8 @@ Configurado para desarrollo local:
 - ✅ Asignación de roles
 - ✅ Activar/desactivar usuarios
 - ✅ Ver lista de roles
+- ✅ Ver historial de actividad (últimos 20 logins) de cada usuario
+- ✅ Ver último acceso de todos los usuarios
 - ✅ Acceso a todas las secciones
 
 ### USER
@@ -414,6 +437,8 @@ spring.h2.console.path=/h2-console
 spring.jpa.database-platform=org.hibernate.dialect.H2Dialect
 spring.jpa.hibernate.ddl-auto=create
 spring.jpa.show-sql=true
+# Serializar fechas como ISO 8601 en lugar de arrays
+spring.jackson.serialization.write-dates-as-timestamps=false
 
 # Versión de la aplicación (inyectada desde pom.xml por Maven)
 app.version=@project.version@
@@ -458,7 +483,7 @@ VITE_API_URL=http://localhost:8080/api
 cd backend
 mvn clean package
 ```
-El JAR ejecutable estará en `target/springreact-backend-0.0.1-SNAPSHOT.jar`
+El JAR ejecutable estará en `target/springreact-backend-1.0.1.jar`
 
 ### Frontend
 ```bash
@@ -506,15 +531,16 @@ npm test
 **Frontend:**
 - `Dashboard.jsx`: Contenedor principal con gestión de vistas y topbar (breadcrumb + usuario)
 - `Sidebar.jsx`: Navegación lateral con toggle integrado, filtrado por roles, usuario y versión en el pie
-- `UserManagement.jsx`: CRUD de usuarios con validaciones
+- `UserManagement.jsx`: CRUD de usuarios con validaciones, modal de historial de actividad y columna de último acceso
 - `RoleManagement.jsx`: Vista de roles del sistema
 - `Login.jsx`: Formulario de autenticación
 - `ChangePassword.jsx`: Formulario de cambio de contraseña
 - `PrivateRoute.jsx`: HOC para proteger rutas
 
 **Backend:**
-- `AuthController.java`: Endpoints de autenticación
-- `UserController.java`: CRUD de usuarios con validaciones
+- `AuthController.java`: Endpoints de autenticación (registra IP y fecha en cada login)
+- `UserController.java`: CRUD de usuarios con validaciones y endpoints de historial de actividad
+- `UserLoginHistory.java`: Entidad y repositorio para el historial de logins
 - `RoleController.java`: Endpoints de roles
 - `InfoController.java`: Expone la versión del `pom.xml` vía `/api/info/version`
 - `SecurityConfig.java`: Configuración de seguridad Spring
@@ -533,7 +559,7 @@ npm test
 - [ ] Externalizar JWT secret a variables de entorno
 - [ ] Configurar HTTPS
 - [x] Implementar rate limiting (Bucket4j)
-- [ ] Agregar logs de auditoría
+- [x] Agregar logs de auditoría (historial de logins con IP)
 - [ ] Configurar CORS para dominio de producción
 
 ### Monitoreo
