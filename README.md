@@ -35,6 +35,7 @@ Aplicación web empresarial completa con autenticación JWT, sistema de roles y 
 - **Validación en Español**: Mensajes de validación de formularios en español
 - **Toggle Contraseña**: Botón para mostrar/ocultar la contraseña
 - **Generador de Contraseña Segura**: Genera contraseña aleatoria de 12 caracteres con botón de copiar al portapapeles
+- **Modo Oscuro / Claro**: Toggle en el sidebar para cambiar entre temas; preferencia persistida en `localStorage` y aplicada instantáneamente sin parpadeo
 - **Arquitectura Componetizada**: Organización por responsabilidades
 
 ## 🛠️ Stack Tecnológico
@@ -117,6 +118,8 @@ SpringReact/
     │   │   ├── UserService.js         # API usuarios
     │   │   ├── RoleService.js         # API roles
     │   │   └── InfoService.js         # Versión de la aplicación
+    │   ├── context/
+    │   │   └── ThemeContext.jsx        # Contexto de tema oscuro/claro
     │   ├── hooks/
     │   │   └── useInactivityLogout.js # Hook de inactividad
     │   ├── styles/
@@ -335,6 +338,31 @@ Al iniciar la aplicación, se crean automáticamente:
 
 ## 🎨 Sistema de Diseño
 
+### Modo Oscuro / Claro
+
+La aplicación implementa un sistema de temas completo:
+
+- **`ThemeContext.jsx`**: Contexto React con estado `isDark` y función `toggleTheme`
+- **Persistencia**: La preferencia se guarda en `localStorage` (clave `'theme'`)
+- **Sin parpadeo**: El atributo `data-theme` se aplica en el inicializador lazy del `useState`, antes del primer render
+- **Selector CSS**: Todos los colores del modo oscuro se definen bajo `[data-theme="dark"]` en `variables.css`
+- **Toggle en el Sidebar**: Botón en la cabecera del sidebar con icono de sol (modo oscuro activo) o luna (modo claro activo)
+
+```css
+/* Modo claro (por defecto en :root) */
+--color-bg-primary: #ffffff;
+--color-bg-page: #f5f7fa;
+--color-text-primary: #2c3e50;
+
+/* Modo oscuro */
+[data-theme="dark"] {
+  --color-bg-primary: #1e2433;
+  --color-bg-page: #141824;
+  --color-text-primary: #e2e8f0;
+  /* ... resto de variables adaptadas ... */
+}
+```
+
 ### Variables CSS
 
 El proyecto utiliza un sistema de diseño centralizado con variables CSS:
@@ -530,7 +558,8 @@ npm test
 
 **Frontend:**
 - `Dashboard.jsx`: Contenedor principal con gestión de vistas y topbar (breadcrumb + usuario)
-- `Sidebar.jsx`: Navegación lateral con toggle integrado, filtrado por roles, usuario y versión en el pie
+- `Sidebar.jsx`: Navegación lateral con toggle integrado, filtrado por roles, usuario y versión en el pie; incluye botón de cambio de tema (sol/luna)
+- `ThemeContext.jsx`: Contexto React para el tema oscuro/claro; provee `isDark` y `toggleTheme`
 - `UserManagement.jsx`: CRUD de usuarios con validaciones, modal de historial de actividad y columna de último acceso
 - `RoleManagement.jsx`: Vista de roles del sistema
 - `Login.jsx`: Formulario de autenticación
@@ -601,6 +630,11 @@ npm test
 - Verifica que `main.css` esté importado en `main.jsx`
 - Ejecuta `npm run dev` nuevamente
 - Limpia caché del navegador
+
+### El tema oscuro/claro no se aplica correctamente
+- Verifica que `ThemeProvider` envuelva la aplicación en `App.jsx`
+- Limpia `localStorage` y recarga: `localStorage.removeItem('theme')`
+- Comprueba que el atributo `data-theme` esté presente en `<html>` (DevTools → Inspector)
 
 ## 📄 Licencia
 
