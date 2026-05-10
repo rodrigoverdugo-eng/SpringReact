@@ -13,6 +13,7 @@ Aplicación web empresarial completa con autenticación JWT, sistema de roles y 
 - **Validación de Usuario Activo**: Campo "vigencia" para activar/desactivar usuarios
 - **Registro de Actividad**: Cada login registra fecha/hora e IP del cliente
 - **Último Acceso en Login**: La respuesta del login incluye la fecha del acceso anterior (`lastLoginAt`)
+- **Logging Estructurado**: Logs en formato JSON (Logstash) con campos MDC: evento, email, IP, rol
 
 ### 👥 Gestión de Usuarios
 - **CRUD Completo**: Crear, leer, actualizar y eliminar usuarios
@@ -49,6 +50,7 @@ Aplicación web empresarial completa con autenticación JWT, sistema de roles y 
 - **PostgreSQL** (perfil `postgres`)
 - **BCrypt** para encriptación de contraseñas
 - **Maven** para gestión de dependencias
+- **Logging estructurado** (formato Logstash JSON, nativo Spring Boot 3.4)
 
 ### Frontend
 - **React 18.2.0**
@@ -640,6 +642,45 @@ npm test
 6. Si Access Token expira, frontend usa Refresh Token para renovar
 7. Logout elimina tokens del localStorage
 
+### Logging Estructurado
+
+Los logs se emiten en **formato JSON** (compatible con Logstash/ELK) gracias a la configuración nativa de Spring Boot 3.4.
+
+**Activado en** `application.properties`:
+```properties
+logging.structured.format.console=logstash
+```
+
+**Campos MDC incluidos por evento:**
+
+| Evento | Campos |
+|--------|--------|
+| `LOGIN_SUCCESS` | `email`, `role`, `client_ip` |
+| `LOGIN_FAILED` | `email`, `client_ip`, `reason` (`user_not_found` / `user_inactive` / `bad_credentials`) |
+| `PASSWORD_CHANGED` | `email` |
+| `USER_CREATED` | `user_id`, `email` |
+| `USER_UPDATED` | `user_id`, `email` |
+| `USER_DELETED` | `user_id`, `email` |
+
+**Ejemplo de log de login exitoso:**
+```json
+{
+  "@timestamp": "2026-05-10T10:23:45.123Z",
+  "log.level": "INFO",
+  "message": "Login exitoso",
+  "event": "LOGIN_SUCCESS",
+  "email": "admin@example.com",
+  "role": "ADMIN",
+  "client_ip": "192.168.1.1",
+  "logger_name": "com.example.springreact.controller.AuthController"
+}
+```
+
+**Archivos modificados:**
+- `backend/src/main/resources/application.properties` — activa el formato JSON
+- `backend/.../controller/AuthController.java` — MDC en login, login fallido y cambio de contraseña
+- `backend/.../controller/UserController.java` — MDC en crear, actualizar y eliminar usuarios
+
 ### Configuración del Tiempo de Inactividad
 
 El logout automático por inactividad está controlado en **dos archivos que deben mantenerse sincronizados**:
@@ -709,7 +750,7 @@ useInactivityLogout(10);
 - [ ] Configurar CORS para dominio de producción
 
 ### Monitoreo
-- [ ] Implementar logging estructurado
+- [x] Implementar logging estructurado (formato Logstash JSON con MDC)
 - [ ] Configurar métricas (Actuator)
 - [ ] Health checks
 - [ ] Alertas y notificaciones
