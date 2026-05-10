@@ -10,7 +10,7 @@
   border-radius: 8px;
   padding: 10px;
   cursor: pointer;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-sm);
   align-items: center;
   justify-content: center;
   color: var(--color-text-primary);
@@ -43,7 +43,7 @@
   height: 100vh;
   background: var(--color-bg-primary);
   border-right: 1px solid var(--color-border-light);
-  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.05);
+  box-shadow: var(--shadow-sidebar);
   transition: all 0.3s ease, background-color 0.3s ease;
   z-index: 1000;
   display: flex;

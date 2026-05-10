@@ -3,6 +3,8 @@
    ======================================== */
 
 :root {
+  color-scheme: light;
+
   /* Colores primarios */
   --color-primary: #2c3e50;
   --color-primary-dark: #1a252f;
@@ -37,6 +39,8 @@
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06);
   --shadow-md: 0 4px 12px rgba(44, 62, 80, 0.15);
   --shadow-lg: 0 10px 40px rgba(0, 0, 0, 0.1);
+  --shadow-sidebar: 2px 0 8px rgba(0, 0, 0, 0.05);
+  --shadow-modal: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
   
   /* Bordes redondeados */
   --radius-sm: 4px;
@@ -121,6 +125,8 @@
    ======================================== */
 
 [data-theme="dark"] {
+  color-scheme: dark;
+
   --color-bg-primary: #1e2433;
   --color-bg-page: #141824;
   --color-bg-light: #141824;
@@ -144,6 +150,8 @@
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4);
   --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.5);
   --shadow-lg: 0 10px 40px rgba(0, 0, 0, 0.6);
+  --shadow-sidebar: 2px 0 16px rgba(0, 0, 0, 0.5);
+  --shadow-modal: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.3);
 
   --color-nav-hover-bg: #2d3748;
   --color-nav-active-bg: #1a365d;

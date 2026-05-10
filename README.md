@@ -45,7 +45,8 @@ Aplicación web empresarial completa con autenticación JWT, sistema de roles y 
 - **Spring Boot 3.4.5** (v1.0.1)
 - **Spring Security** con JWT
 - **Spring Data JPA**
-- **H2 Database** (en memoria)
+- **H2 Database** (en memoria, perfil `h2`)
+- **PostgreSQL** (perfil `postgres`)
 - **BCrypt** para encriptación de contraseñas
 - **Maven** para gestión de dependencias
 
@@ -287,7 +288,7 @@ Authorization: Bearer {token}
 
 ## 🗄️ Base de Datos
 
-### H2 Database (Desarrollo)
+### H2 Database (perfil `h2`)
 
 Consola H2 disponible en: **`http://localhost:8080/h2-console`**
 
@@ -295,6 +296,16 @@ Consola H2 disponible en: **`http://localhost:8080/h2-console`**
 - JDBC URL: `jdbc:h2:mem:testdb`
 - Usuario: `sa`
 - Contraseña: (vacía)
+
+### PostgreSQL (perfil `postgres`)
+
+Requiere una instancia de PostgreSQL en ejecución. Crear la base de datos y el usuario antes de iniciar:
+
+```sql
+CREATE USER tu_usuario WITH PASSWORD 'tu_contraseña';
+CREATE DATABASE springreact OWNER tu_usuario;
+GRANT ALL PRIVILEGES ON DATABASE springreact TO tu_usuario;
+```
 
 ### Modelo de Datos
 
@@ -347,18 +358,29 @@ La aplicación implementa un sistema de temas completo:
 - **Sin parpadeo**: El atributo `data-theme` se aplica en el inicializador lazy del `useState`, antes del primer render
 - **Selector CSS**: Todos los colores del modo oscuro se definen bajo `[data-theme="dark"]` en `variables.css`
 - **Toggle en el Sidebar**: Botón en la cabecera del sidebar con icono de sol (modo oscuro activo) o luna (modo claro activo)
+- **`color-scheme`**: Declarado en `:root` y `[data-theme="dark"]`, lo que adapta los controles nativos del navegador (dropdowns, scrollbars) al tema activo
+- **Fix autofill**: Mediante `-webkit-box-shadow` inset, los campos autocompletados respetan los colores del tema en lugar del fondo blanco forzado por el navegador
+- **Sombras adaptadas**: Variables `--shadow-sidebar` y `--shadow-modal` con valores diferenciados (más intensas en oscuro) para mantener visibilidad en ambos temas
 
 ```css
 /* Modo claro (por defecto en :root) */
---color-bg-primary: #ffffff;
---color-bg-page: #f5f7fa;
---color-text-primary: #2c3e50;
+:root {
+  color-scheme: light;
+  --color-bg-primary: #ffffff;
+  --color-bg-page: #f5f7fa;
+  --color-text-primary: #2c3e50;
+  --shadow-sidebar: 2px 0 8px rgba(0, 0, 0, 0.05);
+  --shadow-modal: 0 20px 25px -5px rgba(0, 0, 0, 0.1), ...;
+}
 
 /* Modo oscuro */
 [data-theme="dark"] {
+  color-scheme: dark;
   --color-bg-primary: #1e2433;
   --color-bg-page: #141824;
   --color-text-primary: #e2e8f0;
+  --shadow-sidebar: 2px 0 16px rgba(0, 0, 0, 0.5);
+  --shadow-modal: 0 20px 25px -5px rgba(0, 0, 0, 0.5), ...;
   /* ... resto de variables adaptadas ... */
 }
 ```
@@ -446,26 +468,18 @@ Configurado para desarrollo local:
 
 ### Backend
 
-**application.properties:**
+La configuración del backend utiliza **Spring Profiles** para soportar múltiples motores de base de datos sin cambiar código.
+
+**`application.properties`** (configuración común + perfil activo):
 ```properties
 # Puerto del servidor
 server.port=8080
 
-# Configuración de H2 Database
-spring.datasource.url=jdbc:h2:mem:testdb
-spring.datasource.driverClassName=org.h2.Driver
-spring.datasource.username=sa
-spring.datasource.password=
-
-# Consola H2
-spring.h2.console.enabled=true
-spring.h2.console.path=/h2-console
+# Perfil activo: 'h2' o 'postgres'
+spring.profiles.active=postgres
 
 # JPA/Hibernate
-spring.jpa.database-platform=org.hibernate.dialect.H2Dialect
-spring.jpa.hibernate.ddl-auto=create
 spring.jpa.show-sql=true
-# Serializar fechas como ISO 8601 en lugar de arrays
 spring.jackson.serialization.write-dates-as-timestamps=false
 
 # Versión de la aplicación (inyectada desde pom.xml por Maven)
@@ -474,6 +488,39 @@ app.version=@project.version@
 # Rate Limiting
 rate-limit.max-attempts=5
 rate-limit.refill-minutes=1
+```
+
+**`application-h2.properties`** (perfil H2 — en memoria):
+```properties
+spring.datasource.url=jdbc:h2:mem:testdb
+spring.datasource.driverClassName=org.h2.Driver
+spring.datasource.username=sa
+spring.datasource.password=
+spring.h2.console.enabled=true
+spring.h2.console.path=/h2-console
+spring.jpa.database-platform=org.hibernate.dialect.H2Dialect
+spring.jpa.hibernate.ddl-auto=create
+```
+
+**`application-postgres.properties`** (perfil PostgreSQL):
+```properties
+spring.datasource.url=jdbc:postgresql://localhost:5432/springreact
+spring.datasource.driverClassName=org.postgresql.Driver
+spring.datasource.username=tu_usuario
+spring.datasource.password=tu_contraseña
+spring.jpa.database-platform=org.hibernate.dialect.PostgreSQLDialect
+spring.jpa.hibernate.ddl-auto=update
+```
+
+**Cambiar de perfil al ejecutar:**
+```bash
+# Con Maven
+mvn spring-boot:run -Dspring-boot.run.profiles=h2
+mvn spring-boot:run -Dspring-boot.run.profiles=postgres
+
+# Con el JAR
+java -jar target/springreact-backend-1.0.1.jar --spring.profiles.active=h2
+java -jar target/springreact-backend-1.0.1.jar --spring.profiles.active=postgres
 ```
 
 ### Frontend
@@ -579,8 +626,8 @@ npm test
 ## ⚠️ Consideraciones para Producción
 
 ### Base de Datos
-- [ ] Migrar de H2 a PostgreSQL/MySQL
-- [ ] Configurar pool de conexiones
+- [x] Soporte para PostgreSQL mediante Spring Profiles
+- [ ] Configurar pool de conexiones (HikariCP)
 - [ ] Implementar migrations (Flyway/Liquibase)
 - [ ] Backups automatizados
 
@@ -615,6 +662,12 @@ npm test
 - Verifica que el puerto 8080 no esté en uso
 - Asegúrate de tener Java 21 instalado: `java -version`
 - Revisa los logs en la consola
+
+### Error de conexión con PostgreSQL
+- Verifica que PostgreSQL esté en ejecución: `pg_isready`
+- Comprueba que la base de datos y el usuario existen
+- Revisa las credenciales en `application-postgres.properties`
+- Para usar H2 en su lugar: cambia `spring.profiles.active=h2` en `application.properties`
 
 ### El frontend no conecta con el backend
 - Verifica que el backend esté ejecutándose en `http://localhost:8080`
