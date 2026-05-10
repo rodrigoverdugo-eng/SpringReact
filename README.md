@@ -549,6 +549,14 @@ spring.h2.console.enabled=true
 spring.h2.console.path=/h2-console
 spring.jpa.database-platform=org.hibernate.dialect.H2Dialect
 spring.jpa.hibernate.ddl-auto=create
+
+# HikariCP - Pool de conexiones (perfil H2 / desarrollo)
+spring.datasource.hikari.pool-name=HikariPool-H2
+spring.datasource.hikari.minimum-idle=2
+spring.datasource.hikari.maximum-pool-size=5
+spring.datasource.hikari.connection-timeout=20000
+spring.datasource.hikari.idle-timeout=300000
+spring.datasource.hikari.max-lifetime=600000
 ```
 
 **`application-postgres.properties`** (perfil PostgreSQL):
@@ -559,6 +567,15 @@ spring.datasource.username=tu_usuario
 spring.datasource.password=tu_contraseña
 spring.jpa.database-platform=org.hibernate.dialect.PostgreSQLDialect
 spring.jpa.hibernate.ddl-auto=update
+
+# HikariCP - Pool de conexiones (perfil PostgreSQL / producción)
+spring.datasource.hikari.pool-name=HikariPool-Postgres
+spring.datasource.hikari.minimum-idle=5
+spring.datasource.hikari.maximum-pool-size=20
+spring.datasource.hikari.connection-timeout=30000
+spring.datasource.hikari.idle-timeout=600000
+spring.datasource.hikari.max-lifetime=1800000
+spring.datasource.hikari.keepalive-time=60000
 ```
 
 **Cambiar de perfil al ejecutar:**
@@ -738,7 +755,7 @@ useInactivityLogout(10);
 
 ### Base de Datos
 - [x] Soporte para PostgreSQL mediante Spring Profiles
-- [ ] Configurar pool de conexiones (HikariCP)
+- [x] Configurar pool de conexiones (HikariCP)
 - [ ] Implementar migrations (Flyway/Liquibase)
 - [ ] Backups automatizados
 
