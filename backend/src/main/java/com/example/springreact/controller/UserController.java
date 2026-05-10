@@ -12,6 +12,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.slf4j.MDC;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,6 +21,7 @@ import org.springframework.lang.NonNull;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/users")
 @RequiredArgsConstructor
@@ -72,7 +75,13 @@ public class UserController {
       }
       user.setRole(role);
     }
-    return ResponseEntity.ok(userRepository.save(user));
+    User saved = userRepository.save(user);
+    MDC.put("event", "USER_CREATED");
+    MDC.put("user_id", String.valueOf(saved.getId()));
+    MDC.put("email", saved.getEmail());
+    log.info("Usuario creado");
+    MDC.clear();
+    return ResponseEntity.ok(saved);
   }
 
   // Actualizar usuario
@@ -111,7 +120,13 @@ public class UserController {
                 // Hashear password antes de actualizar
                 user.setPassword(passwordEncoder.encode(userDetails.getPassword()));
               }
-              return ResponseEntity.ok(userRepository.save(user));
+              User updated = userRepository.save(user);
+              MDC.put("event", "USER_UPDATED");
+              MDC.put("user_id", String.valueOf(updated.getId()));
+              MDC.put("email", updated.getEmail());
+              log.info("Usuario actualizado");
+              MDC.clear();
+              return ResponseEntity.ok(updated);
             })
         .orElse(ResponseEntity.notFound().build());
   }
@@ -124,6 +139,11 @@ public class UserController {
         .map(
             (@NonNull User user) -> {
               userRepository.delete(user);
+              MDC.put("event", "USER_DELETED");
+              MDC.put("user_id", String.valueOf(user.getId()));
+              MDC.put("email", user.getEmail());
+              log.info("Usuario eliminado");
+              MDC.clear();
               return ResponseEntity.ok().build();
             })
         .orElse(ResponseEntity.notFound().build());

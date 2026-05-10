@@ -640,6 +640,29 @@ npm test
 6. Si Access Token expira, frontend usa Refresh Token para renovar
 7. Logout elimina tokens del localStorage
 
+### Configuración del Tiempo de Inactividad
+
+El logout automático por inactividad está controlado en **dos archivos que deben mantenerse sincronizados**:
+
+| Archivo | Variable | Valor actual |
+|---------|----------|--------------|
+| `backend/.../security/JwtService.java` | `ACCESS_TOKEN_VALIDITY` | 15 minutos |
+| `frontend/src/components/pages/Dashboard.jsx` | `useInactivityLogout(15)` | 15 minutos |
+
+Ambos valores deben ser iguales. Si el token dura más que el timer de inactividad (o viceversa), se produce una inconsistencia de seguridad.
+
+Para cambiar el tiempo (ejemplo: 10 minutos), modificar **ambos archivos**:
+
+```java
+// JwtService.java — debe coincidir con Dashboard.jsx
+private final long ACCESS_TOKEN_VALIDITY = 10 * 60 * 1000; // 10 min
+```
+
+```js
+// Dashboard.jsx — debe coincidir con JwtService.java
+useInactivityLogout(10);
+```
+
 ### Flujo de Cambio de Contraseña
 
 1. Usuario con `requiresPasswordChange=true` es redirigido a `/change-password`

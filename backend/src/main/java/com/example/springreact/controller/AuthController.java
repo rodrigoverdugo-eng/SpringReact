@@ -11,12 +11,15 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.slf4j.MDC;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.lang.NonNull;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
@@ -37,6 +40,12 @@ public class AuthController {
     Optional<User> userOpt = userRepository.findByEmail(email);
 
     if (userOpt.isEmpty()) {
+      MDC.put("event", "LOGIN_FAILED");
+      MDC.put("reason", "user_not_found");
+      MDC.put("email", email);
+      MDC.put("client_ip", getClientIp(request));
+      log.warn("Intento de login con email no registrado");
+      MDC.clear();
       return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
           .body(Map.of("message", "Credenciales inválidas"));
     }
@@ -45,12 +54,24 @@ public class AuthController {
 
     // Verificar si el usuario está activo
     if (Boolean.FALSE.equals(user.getVigencia())) {
+      MDC.put("event", "LOGIN_FAILED");
+      MDC.put("reason", "user_inactive");
+      MDC.put("email", email);
+      MDC.put("client_ip", getClientIp(request));
+      log.warn("Intento de login con usuario inactivo");
+      MDC.clear();
       return ResponseEntity.status(HttpStatus.FORBIDDEN)
           .body(Map.of("message", "Usuario inactivo. Contacte al administrador."));
     }
 
     // Verificar password con BCrypt
     if (!passwordEncoder.matches(password, user.getPassword())) {
+      MDC.put("event", "LOGIN_FAILED");
+      MDC.put("reason", "bad_credentials");
+      MDC.put("email", email);
+      MDC.put("client_ip", getClientIp(request));
+      log.warn("Intento de login con contraseña incorrecta");
+      MDC.clear();
       return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
           .body(Map.of("message", "Credenciales inválidas"));
     }
@@ -70,6 +91,13 @@ public class AuthController {
         jwtService.generateAccessToken(
             user.getEmail(), user.getId(), user.getName(), user.getRole().getName());
     String refreshToken = jwtService.generateRefreshToken(user.getEmail());
+
+    MDC.put("event", "LOGIN_SUCCESS");
+    MDC.put("email", user.getEmail());
+    MDC.put("role", user.getRole().getName());
+    MDC.put("client_ip", ipAddress);
+    log.info("Login exitoso");
+    MDC.clear();
 
     // Retornar datos del usuario con tokens
     Map<String, Object> response = new HashMap<>();
@@ -176,6 +204,11 @@ public class AuthController {
     user.setPassword(passwordEncoder.encode(newPassword));
     user.setRequiresPasswordChange(false);
     userRepository.save(user);
+
+    MDC.put("event", "PASSWORD_CHANGED");
+    MDC.put("email", email);
+    log.info("Contraseña actualizada");
+    MDC.clear();
 
     return ResponseEntity.ok(Map.of("message", "Contraseña actualizada exitosamente"));
   }
