@@ -55,9 +55,12 @@ public class SecurityConfig {
                     // Rutas públicas de API (sin autenticación)
                     .requestMatchers("/api/auth/login", "/api/auth/refresh", "/h2-console/**")
                     .permitAll()
-                    // Todas las demás rutas de API requieren autenticación
+                    // Rutas de API protegidas requieren autenticación
+                    .requestMatchers("/api/**")
+                    .authenticated()
+                    // Rutas SPA (no API): dejar pasar para que SpaController sirva index.html
                     .anyRequest()
-                    .authenticated())
+                    .permitAll())
         .sessionManagement(
             session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         // Agregar RateLimitFilter antes del filtro JWT

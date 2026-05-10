@@ -12,7 +12,6 @@ class AuthService {
     localStorage.setItem('refreshToken', refreshToken);
     localStorage.setItem('user', JSON.stringify(userData));
     
-    this.setupAxiosInterceptor();
     return response.data;
   }
 
@@ -25,7 +24,6 @@ class AuthService {
     localStorage.setItem('refreshToken', refreshToken);
     localStorage.setItem('user', JSON.stringify(user));
     
-    this.setupAxiosInterceptor();
     return response.data;
   }
 
@@ -83,8 +81,25 @@ class AuthService {
     return localStorage.getItem('accessToken');
   }
 
+  isTokenExpired(token) {
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
+      return payload.exp * 1000 < Date.now();
+    } catch {
+      return true;
+    }
+  }
+
   isAuthenticated() {
-    return this.getAccessToken() !== null;
+    const token = this.getAccessToken();
+    if (!token) return false;
+    if (this.isTokenExpired(token)) {
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
+      localStorage.removeItem('user');
+      return false;
+    }
+    return true;
   }
 
   setupAxiosInterceptor() {
@@ -139,4 +154,6 @@ class AuthService {
   }
 }
 
-export default new AuthService();
+const authService = new AuthService();
+authService.setupAxiosInterceptor();
+export default authService;

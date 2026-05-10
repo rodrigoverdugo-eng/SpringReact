@@ -436,6 +436,53 @@ El proyecto utiliza un sistema de diseño centralizado con variables CSS:
 5. **Rutas Protegidas**: Componente `PrivateRoute` valida autenticación
 6. **Autorización por Rol**: Endpoints protegidos según rol del usuario
 
+### Seguridad de URLs
+
+#### Recursos estáticos excluidos del filtro de seguridad
+
+Las siguientes rutas se excluyen completamente de la cadena de filtros de Spring Security mediante `WebSecurityCustomizer` (no pasan por JWT ni por rate limiting):
+
+| Patrón | Descripción |
+|--------|-------------|
+| `/` | Raíz de la aplicación |
+| `/index.html` | Entrada del SPA |
+| `/login` | Ruta de login del SPA |
+| `/favicon.ico` | Icono del sitio |
+| `/assets/**` | Assets generados por Vite |
+| `/static/**` | Recursos estáticos adicionales |
+| `/*.css`, `/*.js` | Archivos de estilos y scripts en raíz |
+| `/*.ico`, `/*.png`, `/*.jpg`, `/*.jpeg`, `/*.svg` | Imágenes en raíz |
+
+#### Reglas de autorización de la API
+
+Definidas en `SecurityFilterChain` con sesión **stateless** (sin sesión HTTP):
+
+| Patrón | Acceso | Descripción |
+|--------|--------|-------------|
+| `/api/auth/login` | Público | Inicio de sesión |
+| `/api/auth/refresh` | Público | Renovación de token |
+| `/h2-console/**` | Público | Consola H2 (solo desarrollo) |
+| `/api/**` | Autenticado (JWT) | Resto de endpoints de la API |
+| `/**` (cualquier otra) | Permitido | Rutas SPA servidas por `SpaController` → `index.html` |
+
+#### Orden de la cadena de filtros
+
+```
+Petición entrante
+    │
+    ▼
+RateLimitFilter          ← limita intentos por IP (máx. 5 / minuto)
+    │
+    ▼
+JwtAuthenticationFilter  ← valida y establece el contexto de seguridad
+    │
+    ▼
+UsernamePasswordAuthenticationFilter (Spring Security)
+    │
+    ▼
+Reglas de autorización (requestMatchers)
+```
+
 ### CORS
 
 Configurado para desarrollo local:
