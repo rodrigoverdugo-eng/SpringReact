@@ -5,7 +5,9 @@ import com.example.springreact.model.UserLoginHistory;
 import com.example.springreact.repository.UserLoginHistoryRepository;
 import com.example.springreact.repository.UserRepository;
 import com.example.springreact.security.JwtService;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
@@ -13,7 +15,10 @@ import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.lang.NonNull;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -30,10 +35,15 @@ public class AuthController {
   private final JwtService jwtService;
   private final PasswordEncoder passwordEncoder;
 
+  @Value("${app.security.cookie.secure:false}")
+  private boolean cookieSecure;
+
   // Login
   @PostMapping("/login")
   public ResponseEntity<?> login(
-      @RequestBody @NonNull Map<String, String> credentials, HttpServletRequest request) {
+      @RequestBody @NonNull Map<String, String> credentials,
+      HttpServletRequest request,
+      HttpServletResponse response) {
     String email = credentials.get("email");
     String password = credentials.get("password");
 
@@ -100,28 +110,46 @@ public class AuthController {
     MDC.clear();
 
     // Retornar datos del usuario con tokens
-    Map<String, Object> response = new HashMap<>();
-    response.put("id", user.getId());
-    response.put("name", user.getName());
-    response.put("email", user.getEmail());
-    response.put("role", user.getRole());
-    response.put("accessToken", accessToken);
-    response.put("refreshToken", refreshToken);
-    response.put("requiresPasswordChange", user.getRequiresPasswordChange());
-    response.put("vigencia", user.getVigencia());
-    response.put("lastLoginAt", lastLoginAt);
-    response.put("message", "Login exitoso");
+    Map<String, Object> responseBody = new HashMap<>();
+    responseBody.put("id", user.getId());
+    responseBody.put("name", user.getName());
+    responseBody.put("email", user.getEmail());
+    responseBody.put("role", user.getRole());
+    responseBody.put("accessToken", accessToken);
+    responseBody.put("requiresPasswordChange", user.getRequiresPasswordChange());
+    responseBody.put("vigencia", user.getVigencia());
+    responseBody.put("lastLoginAt", lastLoginAt);
+    responseBody.put("message", "Login exitoso");
 
-    return ResponseEntity.ok(response);
+    // Enviar refreshToken como cookie httpOnly (no expuesto a JS)
+    ResponseCookie refreshCookie =
+        ResponseCookie.from("refreshToken", refreshToken != null ? refreshToken : "")
+            .httpOnly(true)
+            .secure(cookieSecure)
+            .sameSite("Strict")
+            .path("/api/auth/refresh")
+            .maxAge(7 * 24 * 60 * 60)
+            .build();
+    response.addHeader(HttpHeaders.SET_COOKIE, refreshCookie.toString());
+
+    return ResponseEntity.ok(responseBody);
   }
 
   // Refresh token
   @PostMapping("/refresh")
-  public ResponseEntity<?> refreshToken(@RequestBody @NonNull Map<String, String> request) {
-    String refreshToken = request.get("refreshToken");
+  public ResponseEntity<?> refreshToken(HttpServletRequest request) {
+    String refreshToken = null;
+    if (request.getCookies() != null) {
+      for (Cookie cookie : request.getCookies()) {
+        if ("refreshToken".equals(cookie.getName())) {
+          refreshToken = cookie.getValue();
+          break;
+        }
+      }
+    }
 
     if (refreshToken == null || refreshToken.isEmpty()) {
-      return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+      return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
           .body(Map.of("message", "Refresh token requerido"));
     }
 
@@ -155,16 +183,31 @@ public class AuthController {
           jwtService.generateAccessToken(
               user.getEmail(), user.getId(), user.getName(), user.getRole().getName());
 
-      Map<String, Object> response = new HashMap<>();
-      response.put("accessToken", newAccessToken);
-      response.put("message", "Token renovado");
+      Map<String, Object> refreshResponse = new HashMap<>();
+      refreshResponse.put("accessToken", newAccessToken);
+      refreshResponse.put("message", "Token renovado");
 
-      return ResponseEntity.ok(response);
+      return ResponseEntity.ok(refreshResponse);
 
     } catch (Exception e) {
       return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
           .body(Map.of("message", "Error al renovar token"));
     }
+  }
+
+  // Logout
+  @PostMapping("/logout")
+  public ResponseEntity<?> logout(HttpServletResponse response) {
+    ResponseCookie clearCookie =
+        ResponseCookie.from("refreshToken", "")
+            .httpOnly(true)
+            .secure(cookieSecure)
+            .sameSite("Strict")
+            .path("/api/auth/refresh")
+            .maxAge(0)
+            .build();
+    response.addHeader(HttpHeaders.SET_COOKIE, clearCookie.toString());
+    return ResponseEntity.ok(Map.of("message", "Logout exitoso"));
   }
 
   // Cambiar contraseña

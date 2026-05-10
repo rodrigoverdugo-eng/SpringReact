@@ -46,8 +46,7 @@ Aplicación web empresarial completa con autenticación JWT, sistema de roles y 
 - **Spring Boot 3.4.5** (v1.0.1)
 - **Spring Security** con JWT
 - **Spring Data JPA**
-- **H2 Database** (en memoria, perfil `h2`)
-- **PostgreSQL** (perfil `postgres`)
+- **PostgreSQL** (única base de datos soportada)
 - **BCrypt** para encriptación de contraseñas
 - **Maven** para gestión de dependencias
 - **Logging estructurado** (formato Logstash JSON, nativo Spring Boot 3.4)
@@ -215,8 +214,9 @@ Al iniciar la aplicación, se crean automáticamente:
 | Método | Endpoint | Descripción | Acceso |
 |--------|----------|-------------|--------|
 | POST | `/api/auth/login` | Iniciar sesión | Público |
+| POST | `/api/auth/refresh` | Renovar access token (via cookie) | Público |
+| POST | `/api/auth/logout` | Cerrar sesión e invalidar cookie | Público |
 | POST | `/api/auth/change-password` | Cambiar contraseña | Autenticado |
-| POST | `/api/auth/refresh` | Renovar token | Autenticado |
 
 ### Usuarios
 | Método | Endpoint | Descripción | Acceso |
@@ -254,24 +254,21 @@ POST /api/auth/login
 ```json
 {
   "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-  "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
   "lastLoginAt": "2026-04-30T10:23:45",
   "requiresPasswordChange": false,
   "vigencia": true,
-  "user": {
+  "id": 1,
+  "name": "Administrador",
+  "email": "admin@example.com",
+  "role": {
     "id": 1,
-    "name": "Administrador",
-    "email": "admin@example.com",
-    "requiresPasswordChange": false,
-    "vigencia": true,
-    "role": {
-      "id": 1,
-      "name": "ADMIN",
-      "descripcion": "Administrador del sistema con acceso completo"
-    }
+    "name": "ADMIN",
+    "descripcion": "Administrador del sistema con acceso completo"
   }
 }
 ```
+
+> El `refreshToken` **no aparece en el body**. Se envía como cookie `HttpOnly; Secure; SameSite=Strict` en el header `Set-Cookie`, inaccesible desde JavaScript.
 
 **Crear Usuario:**
 ```json
@@ -290,18 +287,9 @@ Authorization: Bearer {token}
 
 ## 🗄️ Base de Datos
 
-### H2 Database (perfil `h2`)
+### PostgreSQL
 
-Consola H2 disponible en: **`http://localhost:8080/h2-console`**
-
-**Configuración:**
-- JDBC URL: `jdbc:h2:mem:testdb`
-- Usuario: `sa`
-- Contraseña: (vacía)
-
-### PostgreSQL (perfil `postgres`)
-
-Requiere una instancia de PostgreSQL en ejecución. Crear la base de datos y el usuario antes de iniciar:
+Base de datos única soportada. Requiere una instancia de PostgreSQL en ejecución. Crear la base de datos y el usuario antes de iniciar:
 
 ```sql
 CREATE USER tu_usuario WITH PASSWORD 'tu_contraseña';
@@ -422,10 +410,32 @@ El proyecto utiliza un sistema de diseño centralizado con variables CSS:
 
 ## 🔒 Seguridad
 
+### Seguridad de Tokens (httpOnly Cookies)
+
+- **`accessToken`**: Se almacena únicamente **en memoria** (variable de módulo en `AuthService.js`). No persiste en `localStorage` ni en `sessionStorage`; un XSS no puede leerlo. Se pierde al recargar la página y se restaura automáticamente usando el refresh token.
+- **`refreshToken`**: El backend lo envía exclusivamente como **cookie `HttpOnly; Secure; SameSite=Strict`**. JavaScript nunca puede acceder a él. Al recargar, el browser lo envía automáticamente al endpoint `/api/auth/refresh`.
+- **`user`** (datos de sesión): nombre, email, rol, etc. Se guardan en `localStorage` — no contienen datos críticos. El campo `password` está anotado con `@JsonProperty(WRITE_ONLY)` en el backend y nunca viaja al cliente.
+- **Tema (oscuro/claro)**: `localStorage` key `theme` — dato no sensible.
+
+| Dato | Almacenamiento | Accesible desde JS |
+|------|---------------|--------------------|
+| `accessToken` | Memoria (variable) | Sí, pero solo en la misma pestaña |
+| `refreshToken` | Cookie `HttpOnly` | **No** |
+| `user` (nombre, email, rol) | `localStorage` | Sí (no crítico) |
+| `password` | Nunca llega al cliente | — |
+| `theme` | `localStorage` | Sí (no sensible) |
+
+**Configuración de la cookie** (`app.security.cookie.secure`):
+```properties
+# application-postgres.properties
+app.security.cookie.secure=true   # Solo HTTPS (producción)
+```
+En desarrollo local (`http://localhost`) poner `false` para que la cookie funcione sin TLS.
+
 ### Autenticación JWT
 
 - **Access Token**: Válido por 15 minutos
-- **Refresh Token**: Válido por 7 días
+- **Refresh Token**: Válido por 7 días (solo en cookie httpOnly)
 - **Roles en Token**: El rol del usuario se incluye en el JWT
 - **Encriptación**: BCrypt con fuerza 10 para contraseñas
 
@@ -462,8 +472,8 @@ Definidas en `SecurityFilterChain` con sesión **stateless** (sin sesión HTTP):
 | Patrón | Acceso | Descripción |
 |--------|--------|-------------|
 | `/api/auth/login` | Público | Inicio de sesión |
-| `/api/auth/refresh` | Público | Renovación de token |
-| `/h2-console/**` | Público | Consola H2 (solo desarrollo) |
+| `/api/auth/refresh` | Público | Renovación de token (lee cookie httpOnly) |
+| `/api/auth/logout` | Público | Invalidar cookie de refresh token |
 | `/api/**` | Autenticado (JWT) | Resto de endpoints de la API |
 | `/**` (cualquier otra) | Permitido | Rutas SPA servidas por `SpaController` → `index.html` |
 
@@ -524,7 +534,7 @@ La configuración del backend utiliza **Spring Profiles** para soportar múltipl
 # Puerto del servidor
 server.port=8080
 
-# Perfil activo: 'h2' o 'postgres'
+# Perfil activo
 spring.profiles.active=postgres
 
 # JPA/Hibernate
@@ -539,27 +549,7 @@ rate-limit.max-attempts=5
 rate-limit.refill-minutes=1
 ```
 
-**`application-h2.properties`** (perfil H2 — en memoria):
-```properties
-spring.datasource.url=jdbc:h2:mem:testdb
-spring.datasource.driverClassName=org.h2.Driver
-spring.datasource.username=sa
-spring.datasource.password=
-spring.h2.console.enabled=true
-spring.h2.console.path=/h2-console
-spring.jpa.database-platform=org.hibernate.dialect.H2Dialect
-spring.jpa.hibernate.ddl-auto=create
-
-# HikariCP - Pool de conexiones (perfil H2 / desarrollo)
-spring.datasource.hikari.pool-name=HikariPool-H2
-spring.datasource.hikari.minimum-idle=2
-spring.datasource.hikari.maximum-pool-size=5
-spring.datasource.hikari.connection-timeout=20000
-spring.datasource.hikari.idle-timeout=300000
-spring.datasource.hikari.max-lifetime=600000
-```
-
-**`application-postgres.properties`** (perfil PostgreSQL):
+**`application-postgres.properties`** (PostgreSQL):
 ```properties
 spring.datasource.url=jdbc:postgresql://localhost:5432/springreact
 spring.datasource.driverClassName=org.postgresql.Driver
@@ -568,7 +558,7 @@ spring.datasource.password=tu_contraseña
 spring.jpa.database-platform=org.hibernate.dialect.PostgreSQLDialect
 spring.jpa.hibernate.ddl-auto=update
 
-# HikariCP - Pool de conexiones (perfil PostgreSQL / producción)
+# HikariCP - Pool de conexiones
 spring.datasource.hikari.pool-name=HikariPool-Postgres
 spring.datasource.hikari.minimum-idle=5
 spring.datasource.hikari.maximum-pool-size=20
@@ -576,17 +566,18 @@ spring.datasource.hikari.connection-timeout=30000
 spring.datasource.hikari.idle-timeout=600000
 spring.datasource.hikari.max-lifetime=1800000
 spring.datasource.hikari.keepalive-time=60000
+
+# Cookie segura (solo HTTPS) en producción
+app.security.cookie.secure=true
 ```
 
-**Cambiar de perfil al ejecutar:**
+**Ejecutar:**
 ```bash
 # Con Maven
-mvn spring-boot:run -Dspring-boot.run.profiles=h2
-mvn spring-boot:run -Dspring-boot.run.profiles=postgres
+mvn spring-boot:run
 
 # Con el JAR
-java -jar target/springreact-backend-1.0.1.jar --spring.profiles.active=h2
-java -jar target/springreact-backend-1.0.1.jar --spring.profiles.active=postgres
+java -jar target/springreact-backend-1.0.1.jar
 ```
 
 ### Frontend
@@ -653,11 +644,14 @@ npm test
 
 1. Usuario envía credenciales a `/api/auth/login`
 2. Backend valida credenciales y estado `vigencia`
-3. Si es válido, genera Access Token (1h) y Refresh Token (7d)
-4. Frontend almacena tokens en localStorage
-5. Cada petición incluye Access Token en header `Authorization: Bearer {token}`
-6. Si Access Token expira, frontend usa Refresh Token para renovar
-7. Logout elimina tokens del localStorage
+3. Si es válido, genera Access Token (15 min) y Refresh Token (7 días)
+4. **Access Token** → devuelto en el body JSON → guardado en memoria (variable de módulo)
+5. **Refresh Token** → enviado como cookie `HttpOnly; Secure; SameSite=Strict` → JS no puede leerlo
+6. Cada petición incluye el Access Token en header `Authorization: Bearer {token}`
+7. Al expirar el Access Token, el interceptor de Axios llama a `/api/auth/refresh`; el browser envía la cookie automáticamente
+8. Backend valida la cookie y devuelve un nuevo Access Token en el body
+9. Al recargar la página, `PrivateRoute` detecta que no hay token en memoria y llama a `/refresh` para restaurar la sesión
+10. Logout llama a `/api/auth/logout` → backend limpia la cookie (`Max-Age=0`) → frontend borra datos de `localStorage`
 
 ### Logging Estructurado
 
@@ -754,7 +748,7 @@ useInactivityLogout(10);
 ## ⚠️ Consideraciones para Producción
 
 ### Base de Datos
-- [x] Soporte para PostgreSQL mediante Spring Profiles
+- [x] Soporte para PostgreSQL
 - [x] Configurar pool de conexiones (HikariCP)
 - [ ] Implementar migrations (Flyway/Liquibase)
 - [ ] Backups automatizados
@@ -764,6 +758,9 @@ useInactivityLogout(10);
 - [ ] Configurar HTTPS
 - [x] Implementar rate limiting (Bucket4j)
 - [x] Agregar logs de auditoría (historial de logins con IP)
+- [x] Refresh token en cookie httpOnly (protegido de XSS)
+- [x] Access token en memoria (no persiste en localStorage)
+- [x] Headers de seguridad: CSP, XSS-Protection, Referrer-Policy
 - [ ] Configurar CORS para dominio de producción
 
 ### Monitoreo
@@ -803,9 +800,10 @@ useInactivityLogout(10);
 - Verifica la URL en los servicios (`AuthService.js`, `UserService.js`)
 
 ### Error de autenticación
-- Limpia localStorage: `localStorage.clear()`
-- Verifica que las credenciales sean correctas
-- Revisa que el usuario tenga `vigencia=true`
+- Recarga la página — `PrivateRoute` intentará restaurar la sesión automáticamente via cookie
+- Si persiste, verifica que la cookie `refreshToken` exista en DevTools → Application → Cookies
+- Verifica que el usuario tenga `vigencia=true`
+- En desarrollo local: asegúrate de que `app.security.cookie.secure=false` en `application-postgres.properties`
 
 ### Estilos no se aplican
 - Verifica que `main.css` esté importado en `main.jsx`

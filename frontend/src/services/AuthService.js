@@ -2,44 +2,38 @@ import axios from 'axios';
 
 const API_URL = '/api/auth';
 
+// accessToken en memoria: inaccesible desde XSS
+let _accessToken = null;
+
 class AuthService {
   async login(email, password) {
     const response = await axios.post(`${API_URL}/login`, { email, password });
-    const { accessToken, refreshToken, ...userData } = response.data;
-    
-    // Guardar tokens y datos del usuario
-    localStorage.setItem('accessToken', accessToken);
-    localStorage.setItem('refreshToken', refreshToken);
+    const { accessToken, ...userData } = response.data;
+
+    // accessToken solo en memoria; refreshToken llega como cookie httpOnly (invisible a JS)
+    _accessToken = accessToken;
     localStorage.setItem('user', JSON.stringify(userData));
-    
+
     return response.data;
   }
 
   async register(userData) {
     const response = await axios.post(`${API_URL}/register`, userData);
-    const { accessToken, refreshToken, ...user } = response.data;
-    
-    // Guardar tokens y datos del usuario
-    localStorage.setItem('accessToken', accessToken);
-    localStorage.setItem('refreshToken', refreshToken);
+    const { accessToken, ...user } = response.data;
+
+    _accessToken = accessToken;
     localStorage.setItem('user', JSON.stringify(user));
-    
+
     return response.data;
   }
 
   async refreshAccessToken() {
-    const refreshToken = localStorage.getItem('refreshToken');
-    
-    if (!refreshToken) {
-      this.logout();
-      return null;
-    }
-    
     try {
-      const response = await axios.post(`${API_URL}/refresh`, { refreshToken });
+      // Sin body: el browser envía la cookie httpOnly automáticamente
+      const response = await axios.post(`${API_URL}/refresh`, {});
       const { accessToken } = response.data;
-      
-      localStorage.setItem('accessToken', accessToken);
+
+      _accessToken = accessToken;
       return accessToken;
     } catch (error) {
       this.logout();
@@ -47,9 +41,14 @@ class AuthService {
     }
   }
 
-  logout() {
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('refreshToken');
+  async logout() {
+    try {
+      // El backend invalida la cookie del refresh token
+      await axios.post(`${API_URL}/logout`, {});
+    } catch (_) {
+      // Ignorar errores de red en logout
+    }
+    _accessToken = null;
     localStorage.removeItem('user');
     window.location.href = '/login';
   }
@@ -78,7 +77,7 @@ class AuthService {
   }
 
   getAccessToken() {
-    return localStorage.getItem('accessToken');
+    return _accessToken;
   }
 
   isTokenExpired(token) {
@@ -91,12 +90,10 @@ class AuthService {
   }
 
   isAuthenticated() {
-    const token = this.getAccessToken();
+    const token = _accessToken;
     if (!token) return false;
     if (this.isTokenExpired(token)) {
-      localStorage.removeItem('accessToken');
-      localStorage.removeItem('refreshToken');
-      localStorage.removeItem('user');
+      _accessToken = null;
       return false;
     }
     return true;

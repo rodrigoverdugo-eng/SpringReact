@@ -53,7 +53,7 @@ public class SecurityConfig {
             auth ->
                 auth
                     // Rutas públicas de API (sin autenticación)
-                    .requestMatchers("/api/auth/login", "/api/auth/refresh", "/h2-console/**")
+                    .requestMatchers("/api/auth/login", "/api/auth/refresh", "/api/auth/logout")
                     .permitAll()
                     // Rutas de API protegidas requieren autenticación
                     .requestMatchers("/api/**")
@@ -67,8 +67,30 @@ public class SecurityConfig {
         .addFilterBefore(rateLimitFilter, UsernamePasswordAuthenticationFilter.class)
         .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
-    // Permitir H2 console en desarrollo
-    http.headers(headers -> headers.frameOptions(frameOptions -> frameOptions.disable()));
+    http.headers(
+        headers ->
+            headers
+                .contentSecurityPolicy(
+                    csp ->
+                        csp.policyDirectives(
+                            "default-src 'self'; "
+                                + "script-src 'self'; "
+                                + "style-src 'self' 'unsafe-inline'; "
+                                + "img-src 'self' data:; "
+                                + "font-src 'self'; "
+                                + "connect-src 'self'; "
+                                + "frame-ancestors 'none'"))
+                .xssProtection(
+                    xss ->
+                        xss.headerValue(
+                            org.springframework.security.web.header.writers
+                                .XXssProtectionHeaderWriter.HeaderValue.ENABLED_MODE_BLOCK))
+                .referrerPolicy(
+                    referrer ->
+                        referrer.policy(
+                            org.springframework.security.web.header.writers
+                                .ReferrerPolicyHeaderWriter.ReferrerPolicy
+                                .STRICT_ORIGIN_WHEN_CROSS_ORIGIN)));
 
     return http.build();
   }
