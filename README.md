@@ -763,7 +763,7 @@ useInactivityLogout(10);
 - [ ] Backups automatizados
 
 ### Seguridad
-- [ ] Externalizar JWT secret a variables de entorno
+- [x] Externalizar JWT secret a variables de entorno
 - [ ] Configurar HTTPS
 - [x] Implementar rate limiting (Bucket4j)
 - [x] Agregar logs de auditoría (historial de logins con IP)
