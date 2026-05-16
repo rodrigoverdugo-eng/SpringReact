@@ -8,18 +8,18 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import javax.crypto.SecretKey;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Service
 public class JwtService {
 
-  // Clave secreta (en producción usar application.properties y cifrada)
-  // Usa una clave base64 segura y persistente
-  private static final String SECRET =
-      "bXktdmVyeS1zZWNyZXQta2V5LXdpdGgtc3VmZmljaWVudC1sZW5ndGgtZm9yLWhzMjU2IQ=="; // ejemplo,
-  // reemplazar en
-  // producción
-  private final SecretKey SECRET_KEY = Keys.hmacShaKeyFor(Base64.getDecoder().decode(SECRET));
+  @Value("${jwt.secret}")
+  private String secret;
+
+  private SecretKey getSecretKey() {
+    return Keys.hmacShaKeyFor(Base64.getDecoder().decode(secret));
+  }
 
   // Access token: 15 minutos
   private final long ACCESS_TOKEN_VALIDITY = 15 * 60 * 1000; // 15 min
@@ -53,7 +53,7 @@ public class JwtService {
         .subject(subject)
         .issuedAt(now)
         .expiration(expiryDate)
-        .signWith(SECRET_KEY)
+        .signWith(getSecretKey())
         .compact();
   }
 
@@ -78,7 +78,7 @@ public class JwtService {
   }
 
   private Claims extractAllClaims(String token) {
-    return Jwts.parser().verifyWith(SECRET_KEY).build().parseSignedClaims(token).getPayload();
+    return Jwts.parser().verifyWith(getSecretKey()).build().parseSignedClaims(token).getPayload();
   }
 
   public boolean isTokenExpired(String token) {

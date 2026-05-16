@@ -438,6 +438,7 @@ En desarrollo local (`http://localhost`) poner `false` para que la cookie funcio
 - **Refresh Token**: Válido por 7 días (solo en cookie httpOnly)
 - **Roles en Token**: El rol del usuario se incluye en el JWT
 - **Encriptación**: BCrypt con fuerza 10 para contraseñas
+- **Secreto externalizado**: La clave de firma JWT se lee de la variable de entorno `JWT_SECRET` (obligatoria; no tiene valor por defecto)
 
 ### Características de Seguridad
 
@@ -544,6 +545,9 @@ spring.jackson.serialization.write-dates-as-timestamps=false
 # Versión de la aplicación (inyectada desde pom.xml por Maven)
 app.version=@project.version@
 
+# JWT (requiere variable de entorno JWT_SECRET)
+jwt.secret=${JWT_SECRET}
+
 # Rate Limiting
 rate-limit.max-attempts=5
 rate-limit.refill-minutes=1
@@ -569,6 +573,11 @@ spring.datasource.hikari.keepalive-time=60000
 
 # Cookie segura (solo HTTPS) en producción
 app.security.cookie.secure=true
+```
+
+**Variable de entorno requerida:**
+```bash
+export JWT_SECRET=<clave-base64-segura>
 ```
 
 **Ejecutar:**
