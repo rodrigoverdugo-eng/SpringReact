@@ -12,7 +12,6 @@ frontend/node/
 frontend/build/
 frontend/dist/
 frontend/coverage/
-frontend/package-lock.json
 frontend/.pnp
 frontend/.pnp.js
 frontend/.env.local
