@@ -152,6 +152,43 @@ SpringReact/
 - **Java 21** o superior
 - **Maven 3.6+**
 - **Node.js 16+** y npm
+- **Docker** y **Docker Compose** (para ejecución con contenedores)
+
+### 🐳 Docker Compose (recomendado)
+
+Levanta la aplicación completa (PostgreSQL + App) con un solo comando:
+
+```bash
+# Crear el archivo .env con el secreto JWT
+echo "JWT_SECRET=<clave-base64-segura>" > .env
+
+# Construir e iniciar todos los servicios
+docker compose up --build
+```
+
+La aplicación estará disponible en: **`http://localhost:8081`**
+
+| Servicio | Puerto host | Puerto contenedor |
+|----------|-------------|-------------------|
+| App (Spring Boot) | 8081 | 8080 |
+| PostgreSQL | 5433 | 5432 |
+
+> **Nota:** Para conectarte desde un cliente SQL externo (DBeaver, etc.) usa `localhost:5433`. La comunicación interna entre contenedores usa `postgres:5432`.
+
+**Variables de entorno (`.env`):**
+```env
+# Obligatorio: clave de firma JWT
+JWT_SECRET=<clave-base64-segura-minimo-32-bytes>
+```
+
+**Parar y eliminar los contenedores:**
+```bash
+docker compose down
+# Para eliminar también el volumen de datos de PostgreSQL:
+docker compose down -v
+```
+
+---
 
 ### Backend (Spring Boot)
 
@@ -785,7 +822,7 @@ useInactivityLogout(10);
 - [ ] Cobertura de código mínima 80%
 
 ### DevOps
-- [ ] Dockerizar aplicación
+- [x] Dockerizar aplicación (Dockerfile multi-stage + Docker Compose)
 - [ ] CI/CD pipeline (GitHub Actions / Jenkins)
 - [ ] Kubernetes manifests
 - [ ] Monitoreo con Prometheus/Grafana

@@ -1,0 +1,38 @@
+services:
+
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_DB: springreact
+      POSTGRES_USER: userspringreact
+      POSTGRES_PASSWORD: userspringreact
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U userspringreact -d springreact"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build: .
+    restart: unless-stopped
+    ports:
+      - "8081:8080"
+    environment:
+      # ⚠ Obligatorio: define JWT_SECRET en un archivo .env o como variable de entorno del host
+      JWT_SECRET: ${JWT_SECRET}
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/springreact
+      SPRING_DATASOURCE_USERNAME: userspringreact
+      SPRING_DATASOURCE_PASSWORD: userspringreact
+      # false para HTTP local; cambiar a true en producción con HTTPS
+      COOKIE_SECURE: "false"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  pgdata:
