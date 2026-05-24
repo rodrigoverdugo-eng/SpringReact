@@ -801,7 +801,7 @@ useInactivityLogout(10);
 
 ### Seguridad
 - [x] Externalizar JWT secret a variables de entorno
-- [ ] Configurar HTTPS
+- [x] Configurar HTTPS
 - [x] Implementar rate limiting (Bucket4j)
 - [x] Agregar logs de auditoría (historial de logins con IP)
 - [x] Refresh token en cookie httpOnly (protegido de XSS)
@@ -823,7 +823,7 @@ useInactivityLogout(10);
 
 ### DevOps
 - [x] Dockerizar aplicación (Dockerfile multi-stage + Docker Compose)
-- [ ] CI/CD pipeline (GitHub Actions / Jenkins)
+- [x] CI/CD pipeline (GitHub Actions / Jenkins)
 - [ ] Kubernetes manifests
 - [ ] Monitoreo con Prometheus/Grafana
 

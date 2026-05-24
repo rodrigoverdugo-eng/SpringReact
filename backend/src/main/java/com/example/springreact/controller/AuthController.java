@@ -257,6 +257,12 @@ public class AuthController {
   }
 
   private String getClientIp(HttpServletRequest request) {
+    // X-Real-IP: set by Nginx/Railway with the original client IP
+    String realIp = request.getHeader("X-Real-IP");
+    if (realIp != null && !realIp.isBlank()) {
+      return realIp.trim();
+    }
+    // X-Forwarded-For: "client, proxy1, proxy2" — first entry is the original client
     String forwarded = request.getHeader("X-Forwarded-For");
     if (forwarded != null && !forwarded.isBlank()) {
       return forwarded.split(",")[0].trim();
