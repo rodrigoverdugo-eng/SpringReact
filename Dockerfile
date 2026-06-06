@@ -31,7 +31,7 @@ RUN mvn clean package -DskipTests -Dskip.frontend=true -q
 FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
 
-COPY --from=backend-build /backend/target/springreact-backend-1.0.1.jar app.jar
+COPY --from=backend-build /backend/target/springreact-backend-*.jar app.jar
 
 EXPOSE 8080
 
