@@ -2,6 +2,9 @@
 FROM node:20-alpine AS frontend-build
 WORKDIR /frontend
 
+ARG VITE_APP_TITLE
+ENV VITE_APP_TITLE=$VITE_APP_TITLE
+
 COPY frontend/package*.json ./
 RUN npm ci
 

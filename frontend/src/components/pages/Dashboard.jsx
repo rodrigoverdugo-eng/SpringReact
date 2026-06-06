@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { ChevronRight } from 'lucide-react';
 import '../../styles/main.css';
 import './Dashboard.css';
 import Sidebar from '../layout/Sidebar';
@@ -7,6 +8,7 @@ import UserManagement from '../features/UserManagement';
 import RoleManagement from '../features/RoleManagement';
 import AuthService from '../../services/AuthService';
 import useInactivityLogout from '../../hooks/useInactivityLogout';
+import { VIEW_LABELS, APP_TITLE } from '../../config/menuConfig';
 
 function Dashboard() {
   const [currentUser, setCurrentUser] = useState(null);
@@ -16,14 +18,6 @@ function Dashboard() {
 
   // Control de inactividad: logout automático después de 15 minutos sin actividad
   useInactivityLogout(15);
-
-  // Configuración de vistas
-  const viewConfig = {
-    home: 'Inicio',
-    users: 'Configuración › Gestión de Usuarios',
-    roles: 'Configuración › Roles del Sistema',
-    settings: 'Configuración'
-  };
 
   useEffect(() => {
     console.log('Dashboard montado');
@@ -56,10 +50,8 @@ function Dashboard() {
       <div className={`dashboard-content ${sidebarOpen ? 'sidebar-open' : 'sidebar-closed'}`}>
         <div className="dashboard-header">
           <div className="header-breadcrumb">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="breadcrumb-icon">
-              <polyline points="9 18 15 12 9 6"></polyline>
-            </svg>
-            <h1>{viewConfig[currentView] || 'Dashboard'}</h1>
+            <ChevronRight size={20} className="breadcrumb-icon" />
+            <h1>{VIEW_LABELS[currentView] || 'Dashboard'}</h1>
           </div>
           <div className="header-user">
             <div className="topbar-avatar">
@@ -91,7 +83,7 @@ function Dashboard() {
 
           {currentView === 'home' && (
             <div className="card">
-              <h2 className="card-header">Bienvenido al Sistema de Gestión</h2>
+              <h2 className="card-header">Bienvenido al {APP_TITLE}</h2>
               <div className="card-body">
                 <div className="profile-info">
                   <p><strong>Nombre:</strong> {currentUser?.name}</p>

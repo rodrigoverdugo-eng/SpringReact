@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import UserService from '../../services/UserService';
 import RoleService from '../../services/RoleService';
+import { CheckCircle, AlertCircle, X, Plus, Search, Edit, Clock, Trash2, Check, Copy, Eye, EyeOff, RefreshCw } from 'lucide-react';
 import '../../styles/main.css';
 
 function UserManagement() {
@@ -256,16 +257,9 @@ function UserManagement() {
           <div key={toast.id} className={`toast toast-${toast.type}${toast.hiding ? ' toast-hiding' : ''}`}>
             <span className={`toast-icon toast-icon-${toast.type}`}>
               {toast.type === 'success' ? (
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-                  <polyline points="22 4 12 14.01 9 11.01"></polyline>
-                </svg>
+                <CheckCircle size={20} strokeWidth={2.5} />
               ) : (
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="12" cy="12" r="10"></circle>
-                  <line x1="12" y1="8" x2="12" y2="12"></line>
-                  <line x1="12" y1="16" x2="12.01" y2="16"></line>
-                </svg>
+                <AlertCircle size={20} strokeWidth={2.5} />
               )}
             </span>
             <div className="toast-body">
@@ -273,10 +267,7 @@ function UserManagement() {
               <div className="toast-text">{toast.text}</div>
             </div>
             <button className="toast-close" onClick={() => dismissToast(toast.id)} aria-label="Cerrar">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <line x1="18" y1="6" x2="6" y2="18"></line>
-                <line x1="6" y1="6" x2="18" y2="18"></line>
-              </svg>
+              <X size={16} />
             </button>
           </div>
         ))}
@@ -287,10 +278,7 @@ function UserManagement() {
           <div className="header-title-row">
             <h2>Lista de Usuarios</h2>
             <button className="btn btn-primary" onClick={openModal}>
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <line x1="12" y1="5" x2="12" y2="19"></line>
-                <line x1="5" y1="12" x2="19" y2="12"></line>
-              </svg>
+              <Plus size={16} />
               Agregar Usuario
             </button>
           </div>
@@ -307,10 +295,7 @@ function UserManagement() {
                 }}
                 className="search-input"
               />
-              <svg className="search-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="11" cy="11" r="8"></circle>
-                <path d="m21 21-4.35-4.35"></path>
-              </svg>
+              <Search className="search-icon" size={18} />
             </div>
             
             <div className="per-page-selector">
@@ -406,10 +391,7 @@ function UserManagement() {
                                   title="Editar usuario"
                                   aria-label="Editar usuario"
                                 >
-                                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-                                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-                                  </svg>
+                                  <Edit size={16} />
                                 </button>
                                 <button 
                                   className="btn-action btn-activity" 
@@ -417,10 +399,7 @@ function UserManagement() {
                                   title="Ver actividad"
                                   aria-label="Ver actividad"
                                 >
-                                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                    <circle cx="12" cy="12" r="10"></circle>
-                                    <polyline points="12 6 12 12 16 14"></polyline>
-                                  </svg>
+                                  <Clock size={16} />
                                 </button>
                                 <button 
                                   className="btn-action btn-delete" 
@@ -504,12 +483,7 @@ function UserManagement() {
         <div className="modal-overlay confirm-overlay" onClick={cancelDelete}>
           <div className="confirm-dialog" onClick={(e) => e.stopPropagation()}>
             <div className="confirm-icon-wrapper">
-              <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <polyline points="3 6 5 6 21 6"></polyline>
-                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                <line x1="10" y1="11" x2="10" y2="17"></line>
-                <line x1="14" y1="11" x2="14" y2="17"></line>
-              </svg>
+              <Trash2 size={32} />
             </div>
             <h3 className="confirm-title">Eliminar usuario</h3>
             <p className="confirm-message">
@@ -531,10 +505,7 @@ function UserManagement() {
             <div className="modal-header">
               <h2>{editingId ? 'Editar Usuario' : 'Agregar Usuario'}</h2>
               <button className="modal-close" onClick={handleCancel}>
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <line x1="18" y1="6" x2="6" y2="18"></line>
-                  <line x1="6" y1="6" x2="18" y2="18"></line>
-                </svg>
+                <X size={24} />
               </button>
             </div>
             <div className="modal-body">
@@ -584,16 +555,7 @@ function UserManagement() {
                   title={passwordCopied ? 'Copiado' : 'Copiar contraseña'}
                   disabled={!formData.password}
                 >
-                  {passwordCopied ? (
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <polyline points="20 6 9 17 4 12"></polyline>
-                    </svg>
-                  ) : (
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                    </svg>
-                  )}
+                  {passwordCopied ? <Check size={18} /> : <Copy size={18} />}
                 </button>
                 <button
                   type="button"
@@ -602,24 +564,12 @@ function UserManagement() {
                   aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
                   title={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
                 >
-                  {showPassword ? (
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
-                      <line x1="1" y1="1" x2="23" y2="23"></line>
-                    </svg>
-                  ) : (
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                      <circle cx="12" cy="12" r="3"></circle>
-                    </svg>
-                  )}
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
               </div>
             </div>
             <button type="button" className="btn-generate-password" onClick={generatePassword}>
-              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/>
-              </svg>
+              <RefreshCw size={14} />
               Generar contraseña segura
             </button>
           </div>
@@ -694,10 +644,7 @@ function UserManagement() {
             <div className="modal-header">
               <h2>Actividad — {activityModal.userName}</h2>
               <button className="modal-close" onClick={closeActivityModal}>
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <line x1="18" y1="6" x2="6" y2="18"></line>
-                  <line x1="6" y1="6" x2="18" y2="18"></line>
-                </svg>
+                <X size={24} />
               </button>
             </div>
             <div className="modal-body">

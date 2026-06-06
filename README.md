@@ -56,6 +56,7 @@ Aplicación web empresarial completa con autenticación JWT, sistema de roles y 
 - **React Router DOM 7.11.0** para navegación
 - **Vite 7.3.2** como build tool
 - **Axios 1.6.2** para peticiones HTTP
+- **lucide-react 1.17.0** para iconografía SVG (stroke-based, tree-shaking automático)
 - **CSS Modular** con sistema de diseño
 - **Hooks Personalizados** (useInactivityLogout)
 
@@ -122,6 +123,8 @@ SpringReact/
     │   │   └── InfoService.js         # Versión de la aplicación
     │   ├── context/
     │   │   └── ThemeContext.jsx        # Contexto de tema oscuro/claro
+    │   ├── config/
+    │   │   └── menuConfig.js          # Ítem de menú, permisos por rol y etiquetas de vistas
     │   ├── hooks/
     │   │   └── useInactivityLogout.js # Hook de inactividad
     │   ├── styles/
@@ -773,7 +776,8 @@ useInactivityLogout(10);
 
 **Frontend:**
 - `Dashboard.jsx`: Contenedor principal con gestión de vistas y topbar (breadcrumb + usuario)
-- `Sidebar.jsx`: Navegación lateral con toggle integrado, filtrado por roles, usuario y versión en el pie; incluye botón de cambio de tema (sol/luna)
+- `Sidebar.jsx`: Navegación lateral con toggle integrado, filtrado por roles, usuario y versión en el pie; incluye botón de cambio de tema (sol/luna). Lee la configuración del menú desde `menuConfig.js`
+- `menuConfig.js`: Fuente única de verdad para ítems de menú (`MENU_ITEMS`), título de la aplicación (`APP_TITLE`) y etiquetas de breadcrumb (`VIEW_LABELS`). Permisos definidos con `roles: []` (array); `[]` indica acceso universal
 - `ThemeContext.jsx`: Contexto React para el tema oscuro/claro; provee `isDark` y `toggleTheme`
 - `UserManagement.jsx`: CRUD de usuarios con validaciones, modal de historial de actividad y columna de último acceso
 - `RoleManagement.jsx`: Vista de roles del sistema
@@ -807,7 +811,7 @@ useInactivityLogout(10);
 - [x] Refresh token en cookie httpOnly (protegido de XSS)
 - [x] Access token en memoria (no persiste en localStorage)
 - [x] Headers de seguridad: CSP, XSS-Protection, Referrer-Policy
-- [ ] Configurar CORS para dominio de producción
+- [x] Configurar CORS para dominio de producción
 
 ### Monitoreo
 - [x] Implementar logging estructurado (formato Logstash JSON con MDC)
