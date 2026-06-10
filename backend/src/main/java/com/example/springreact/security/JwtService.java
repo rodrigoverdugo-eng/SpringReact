@@ -22,7 +22,7 @@ public class JwtService {
   }
 
   // Access token: 15 minutos
-  private final long ACCESS_TOKEN_VALIDITY = 15 * 60 * 1000; // 15 min
+  private final long ACCESS_TOKEN_VALIDITY = 10 * 60 * 1000; // 10 min
 
   // Refresh token: 7 días
   private final long REFRESH_TOKEN_VALIDITY = 7 * 24 * 60 * 60 * 1000; // 7 días

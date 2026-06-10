@@ -8,7 +8,7 @@ Aplicación web empresarial completa con autenticación JWT, sistema de roles y 
 - **JWT Authentication**: Tokens de acceso y refresh
 - **Sistema de Roles**: ADMIN y USER con permisos diferenciados
 - **Cambio de Contraseña Obligatorio**: En el primer inicio de sesión
-- **Logout Automático**: Por inactividad (15 minutos)
+- **Logout Automático**: Por inactividad (10 minutos)
 - **Rutas Protegidas**: Componentes protegidos con PrivateRoute
 - **Validación de Usuario Activo**: Campo "vigencia" para activar/desactivar usuarios
 - **Registro de Actividad**: Cada login registra fecha/hora e IP del cliente
@@ -481,7 +481,7 @@ En desarrollo local (`http://localhost`) la variable vale `false`; en producció
 
 ### Autenticación JWT
 
-- **Access Token**: Válido por 15 minutos
+- **Access Token**: Válido por 10 minutos
 - **Refresh Token**: Válido por 7 días (solo en cookie httpOnly)
 - **Roles en Token**: El rol del usuario se incluye en el JWT
 - **Encriptación**: BCrypt con fuerza 10 para contraseñas
@@ -492,7 +492,7 @@ En desarrollo local (`http://localhost`) la variable vale `false`; en producció
 1. **Validación de Usuario Activo**: Solo usuarios con `vigencia=true` pueden iniciar sesión
 2. **Cambio de Contraseña Obligatorio**: Usuarios marcados con `requiresPasswordChange=true` deben cambiar su contraseña
 3. **Email Único**: Validación en backend y frontend
-4. **Logout por Inactividad**: Sesión expira después de 15 minutos sin actividad
+4. **Logout por Inactividad**: Sesión expira después de 10 minutos sin actividad
 5. **Rutas Protegidas**: Componente `PrivateRoute` valida autenticación
 6. **Autorización por Rol**: Endpoints protegidos según rol del usuario
 
@@ -757,8 +757,8 @@ El logout automático por inactividad está controlado en **dos archivos que deb
 
 | Archivo | Variable | Valor actual |
 |---------|----------|--------------|
-| `backend/.../security/JwtService.java` | `ACCESS_TOKEN_VALIDITY` | 15 minutos |
-| `frontend/src/components/pages/Dashboard.jsx` | `useInactivityLogout(15)` | 15 minutos |
+| `backend/.../security/JwtService.java` | `ACCESS_TOKEN_VALIDITY` | 10 minutos |
+| `frontend/src/components/pages/Dashboard.jsx` | `useInactivityLogout(10)` | 10 minutos |
 
 Ambos valores deben ser iguales. Si el token dura más que el timer de inactividad (o viceversa), se produce una inconsistencia de seguridad.
 

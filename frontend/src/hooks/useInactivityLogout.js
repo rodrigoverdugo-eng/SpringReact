@@ -4,19 +4,21 @@ import AuthService from '../services/AuthService';
 // Hook personalizado para detectar inactividad
 const useInactivityLogout = (timeoutMinutes = 15) => {
   const timeoutRef = useRef(null);
+  const lastActivityRef = useRef(Date.now());
   const INACTIVITY_TIME = timeoutMinutes * 60 * 1000; // Convertir a milisegundos
 
-  const resetTimer = () => {
-    // Limpiar timer anterior
+  const scheduleLogout = (delay) => {
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
     }
-
-    // Crear nuevo timer
     timeoutRef.current = setTimeout(() => {
-      console.log('Sesión cerrada por inactividad');
       AuthService.logout();
-    }, INACTIVITY_TIME);
+    }, delay);
+  };
+
+  const resetTimer = () => {
+    lastActivityRef.current = Date.now();
+    scheduleLogout(INACTIVITY_TIME);
   };
 
   useEffect(() => {
@@ -31,10 +33,31 @@ const useInactivityLogout = (timeoutMinutes = 15) => {
     // Iniciar timer
     resetTimer();
 
-    // Agregar listeners
+    // Agregar listeners de actividad
     events.forEach(event => {
       document.addEventListener(event, resetTimer);
     });
+
+    // Manejar visibilidad de la página (bloqueo de pantalla / cambio de app en móvil)
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        // Página oculta: pausar el timer para no cerrar sesión mientras el teléfono está bloqueado
+        if (timeoutRef.current) {
+          clearTimeout(timeoutRef.current);
+        }
+      } else {
+        // Página visible de nuevo: verificar si el tiempo inactivo superó el límite
+        const elapsed = Date.now() - lastActivityRef.current;
+        if (elapsed >= INACTIVITY_TIME) {
+          AuthService.logout();
+        } else {
+          // Reanudar el timer con el tiempo restante
+          scheduleLogout(INACTIVITY_TIME - elapsed);
+        }
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
 
     // Cleanup
     return () => {
@@ -44,6 +67,7 @@ const useInactivityLogout = (timeoutMinutes = 15) => {
       events.forEach(event => {
         document.removeEventListener(event, resetTimer);
       });
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
   }, [INACTIVITY_TIME]);
 };

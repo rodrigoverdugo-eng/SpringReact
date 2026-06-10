@@ -17,7 +17,7 @@ function Dashboard() {
   const navigate = useNavigate();
 
   // Control de inactividad: logout automático después de 15 minutos sin actividad
-  useInactivityLogout(15);
+  useInactivityLogout(10);
 
   useEffect(() => {
     console.log('Dashboard montado');
