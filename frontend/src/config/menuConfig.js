@@ -1,4 +1,4 @@
-import { Home, Users, Shield, Settings } from 'lucide-react';
+import { Home, Users, KeyRound, Settings } from 'lucide-react';
 
 // Título de la aplicación — fuente única: variable de entorno VITE_APP_TITLE (.env)
 export const APP_TITLE = import.meta.env.VITE_APP_TITLE ?? 'Sistema de Gestión';
@@ -26,8 +26,8 @@ export const MENU_ITEMS = [
     icon: Settings,
     roles: [],
     submenu: [
-      { id: 'users', label: 'Gestión de Usuarios', icon: Users,  roles: ['ADMIN'] },
-      { id: 'roles', label: 'Roles',               icon: Shield, roles: [] },
+      { id: 'users',            label: 'Gestión de Usuarios', icon: Users,    roles: ['ADMIN'] },
+      { id: 'change-password', label: 'Cambiar Contraseña',  icon: KeyRound, roles: [] },
     ],
   },
 ];
@@ -39,6 +39,6 @@ export const MENU_ITEMS = [
 export const VIEW_LABELS = {
   home:     'Inicio',
   users:    'Configuración › Gestión de Usuarios',
-  roles:    'Configuración › Roles del Sistema',
+  'change-password': 'Configuración › Cambiar Contraseña',
   settings: 'Configuración',
 };

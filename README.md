@@ -52,10 +52,10 @@ Aplicación web empresarial completa con autenticación JWT, sistema de roles y 
 - **Logging estructurado** (formato Logstash JSON, nativo Spring Boot 3.4)
 
 ### Frontend
-- **React 18.2.0**
-- **React Router DOM 7.11.0** para navegación
+- **React 18.3.1**
+- **React Router DOM 7.17.0** para navegación
 - **Vite 7.3.2** como build tool
-- **Axios 1.6.2** para peticiones HTTP
+- **Axios 1.17.0** para peticiones HTTP
 - **lucide-react 1.17.0** para iconografía SVG (stroke-based, tree-shaking automático)
 - **CSS Modular** con sistema de diseño
 - **Hooks Personalizados** (useInactivityLogout)
@@ -113,13 +113,13 @@ SpringReact/
     │   │   │   └── Sidebar.css
     │   │   ├── features/              # Módulos CRUD
     │   │   │   ├── UserManagement.jsx
-    │   │   │   └── RoleManagement.jsx
+    │   │   │   └── ChangePasswordPanel.jsx
     │   │   └── common/                # Utilidades comunes
     │   │       └── PrivateRoute.jsx
     │   ├── services/
     │   │   ├── AuthService.js         # Autenticación
     │   │   ├── UserService.js         # API usuarios
-    │   │   ├── RoleService.js         # API roles
+    │   │   ├── RoleService.js         # API roles (usado por UserManagement para el dropdown)
     │   │   └── InfoService.js         # Versión de la aplicación
     │   ├── context/
     │   │   └── ThemeContext.jsx        # Contexto de tema oscuro/claro
@@ -552,16 +552,14 @@ Configurado para desarrollo local:
 - ✅ Gestión completa de usuarios (CRUD)
 - ✅ Asignación de roles
 - ✅ Activar/desactivar usuarios
-- ✅ Ver lista de roles
 - ✅ Ver historial de actividad (últimos 20 logins) de cada usuario
 - ✅ Ver último acceso de todos los usuarios
 - ✅ Acceso a todas las secciones
 
 ### USER
 - ✅ Ver perfil propio
-- ✅ Cambiar contraseña
+- ✅ Cambiar contraseña desde el menú (contraseña actual + nueva)
 - ✅ Ver configuración
-- ✅ Ver roles del sistema
 - ❌ No puede gestionar usuarios
 
 ## 🔧 Configuración
@@ -780,9 +778,9 @@ useInactivityLogout(10);
 - `menuConfig.js`: Fuente única de verdad para ítems de menú (`MENU_ITEMS`), título de la aplicación (`APP_TITLE`) y etiquetas de breadcrumb (`VIEW_LABELS`). Permisos definidos con `roles: []` (array); `[]` indica acceso universal
 - `ThemeContext.jsx`: Contexto React para el tema oscuro/claro; provee `isDark` y `toggleTheme`
 - `UserManagement.jsx`: CRUD de usuarios con validaciones, modal de historial de actividad y columna de último acceso
-- `RoleManagement.jsx`: Vista de roles del sistema
+- `ChangePasswordPanel.jsx`: Panel de cambio de contraseña integrado en el dashboard (contraseña actual + nueva + confirmar)
 - `Login.jsx`: Formulario de autenticación
-- `ChangePassword.jsx`: Formulario de cambio de contraseña
+- `ChangePassword.jsx`: Formulario de cambio de contraseña obligatorio (primer login)
 - `PrivateRoute.jsx`: HOC para proteger rutas
 
 **Backend:**

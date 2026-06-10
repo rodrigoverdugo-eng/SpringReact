@@ -5,7 +5,7 @@ import '../../styles/main.css';
 import './Dashboard.css';
 import Sidebar from '../layout/Sidebar';
 import UserManagement from '../features/UserManagement';
-import RoleManagement from '../features/RoleManagement';
+import ChangePasswordPanel from '../features/ChangePasswordPanel';
 import AuthService from '../../services/AuthService';
 import useInactivityLogout from '../../hooks/useInactivityLogout';
 import { VIEW_LABELS, APP_TITLE } from '../../config/menuConfig';
@@ -79,7 +79,7 @@ function Dashboard() {
               </div>
             </div>
           )}
-          {currentView === 'roles' && <RoleManagement />}
+          {currentView === 'change-password' && <ChangePasswordPanel />}
 
           {currentView === 'home' && (
             <div className="card">
