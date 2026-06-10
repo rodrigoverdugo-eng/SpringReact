@@ -180,8 +180,14 @@ La aplicación estará disponible en: **`http://localhost:8081`**
 
 **Variables de entorno (`.env`):**
 ```env
-# Obligatorio: clave de firma JWT
+# Obligatorio: clave de firma JWT (sin valor por defecto)
 JWT_SECRET=<clave-base64-segura-minimo-32-bytes>
+
+# Opcional: título de la aplicación (por defecto: Sistema de Gestión)
+VITE_APP_TITLE=Sistema de Gestión
+
+# Opcional: cookie segura — false para HTTP local, true en producción con HTTPS
+COOKIE_SECURE=false
 ```
 
 **Parar y eliminar los contenedores:**
@@ -468,9 +474,10 @@ El proyecto utiliza un sistema de diseño centralizado con variables CSS:
 **Configuración de la cookie** (`app.security.cookie.secure`):
 ```properties
 # application-postgres.properties
-app.security.cookie.secure=true   # Solo HTTPS (producción)
+# Configurable vía variable de entorno COOKIE_SECURE (false por defecto)
+app.security.cookie.secure=${COOKIE_SECURE:false}
 ```
-En desarrollo local (`http://localhost`) poner `false` para que la cookie funcione sin TLS.
+En desarrollo local (`http://localhost`) la variable vale `false`; en producción (HTTPS) establecer `COOKIE_SECURE=true`.
 
 ### Autenticación JWT
 
@@ -609,13 +616,18 @@ spring.datasource.hikari.idle-timeout=600000
 spring.datasource.hikari.max-lifetime=1800000
 spring.datasource.hikari.keepalive-time=60000
 
-# Cookie segura (solo HTTPS) en producción
-app.security.cookie.secure=true
+# Cookie segura (solo HTTPS) en producción — configurable vía variable de entorno COOKIE_SECURE
+app.security.cookie.secure=${COOKIE_SECURE:false}
 ```
 
-**Variable de entorno requerida:**
+**Variables de entorno:**
 ```bash
+# Obligatoria
 export JWT_SECRET=<clave-base64-segura>
+
+# Opcionales (se pueden poner en un archivo .env en la raíz del proyecto)
+export VITE_APP_TITLE="Sistema de Gestión"   # título de la aplicación
+export COOKIE_SECURE=false                    # true en producción con HTTPS
 ```
 
 **Ejecutar:**

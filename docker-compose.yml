@@ -31,8 +31,8 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/springreact
       SPRING_DATASOURCE_USERNAME: userspringreact
       SPRING_DATASOURCE_PASSWORD: userspringreact
-      # false para HTTP local; cambiar a true en producción con HTTPS
-      COOKIE_SECURE: "false"
+      # false para HTTP local; true en producción con HTTPS
+      COOKIE_SECURE: ${COOKIE_SECURE:-false}
     depends_on:
       postgres:
         condition: service_healthy
