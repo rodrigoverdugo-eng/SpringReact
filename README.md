@@ -543,6 +543,22 @@ UsernamePasswordAuthenticationFilter (Spring Security)
 Reglas de autorización (requestMatchers)
 ```
 
+### Proxy Inverso y Headers Forwarded
+
+La propiedad `server.forward-headers-strategy=native` indica a Spring Boot que confíe en los headers estándar de reenvío de proxy (`X-Forwarded-For`, `X-Forwarded-Proto`, `X-Forwarded-Host`, etc.) que envía el proxy inverso.
+
+| Valor | Comportamiento |
+|-------|----------------|
+| `native` | Delega el procesamiento al servidor embebido (Tomcat `RemoteIpValve`). Recomendado con Railway/Nginx. |
+| `framework` | Usa el `ForwardedHeaderFilter` de Spring. Más flexible, resultado equivalente. |
+| `none` | Ignora los headers de proxy (por defecto si no se configura). |
+
+Esta propiedad es necesaria para que:
+- La IP real del cliente (`X-Forwarded-For`) llegue correctamente al `RateLimitFilter` y al registro de logins.
+- El esquema HTTPS (`X-Forwarded-Proto`) se propague al backend, evitando que las cookies `Secure` sean rechazadas.
+
+> **Seguridad**: Solo activar esta propiedad cuando el tráfico **siempre** pasa por el proxy (Railway, Nginx). Si la app fuera accesible directamente desde internet, un cliente malicioso podría falsificar la IP mediante estos headers.
+
 ### CORS
 
 Configurado para desarrollo local:
@@ -600,24 +616,30 @@ rate-limit.refill-minutes=1
 
 **`application-postgres.properties`** (PostgreSQL):
 ```properties
-spring.datasource.url=jdbc:postgresql://localhost:5432/springreact
+# DataSource
+spring.datasource.url=${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/springreact}
 spring.datasource.driverClassName=org.postgresql.Driver
-spring.datasource.username=tu_usuario
-spring.datasource.password=tu_contraseña
+spring.datasource.username=${SPRING_DATASOURCE_USERNAME:userspringreact}
+spring.datasource.password=${SPRING_DATASOURCE_PASSWORD:userspringreact}
+
+# JPA/Hibernate
 spring.jpa.database-platform=org.hibernate.dialect.PostgreSQLDialect
 spring.jpa.hibernate.ddl-auto=update
 
 # HikariCP - Pool de conexiones
 spring.datasource.hikari.pool-name=HikariPool-Postgres
 spring.datasource.hikari.minimum-idle=5
-spring.datasource.hikari.maximum-pool-size=20
+spring.datasource.hikari.maximum-pool-size=5
 spring.datasource.hikari.connection-timeout=30000
 spring.datasource.hikari.idle-timeout=600000
 spring.datasource.hikari.max-lifetime=1800000
 spring.datasource.hikari.keepalive-time=60000
 
-# Cookie segura (solo HTTPS) en producción — configurable vía variable de entorno COOKIE_SECURE
+# Seguridad
 app.security.cookie.secure=${COOKIE_SECURE:false}
+
+# Proxy inverso (Railway/Nginx)
+server.forward-headers-strategy=native
 ```
 
 **Variables de entorno:**

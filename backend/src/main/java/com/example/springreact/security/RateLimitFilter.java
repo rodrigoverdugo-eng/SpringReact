@@ -78,12 +78,9 @@ public class RateLimitFilter extends OncePerRequestFilter {
   }
 
   private String getClientIP(HttpServletRequest request) {
-    // Intentar obtener la IP real si está detrás de un proxy
-    String xfHeader = request.getHeader("X-Forwarded-For");
-    if (xfHeader == null || xfHeader.isEmpty()) {
-      return request.getRemoteAddr();
-    }
-    // X-Forwarded-For puede contener múltiples IPs, tomar la primera
-    return xfHeader.split(",")[0].trim();
+    // Con server.forward-headers-strategy=native, Tomcat ya procesa X-Forwarded-For
+    // y actualiza getRemoteAddr() con la IP real del cliente. Leer la cabecera
+    // manualmente permitiría a un atacante falsificar su IP y bypassar el rate limit.
+    return request.getRemoteAddr();
   }
 }

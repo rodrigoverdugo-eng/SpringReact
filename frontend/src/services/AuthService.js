@@ -54,13 +54,8 @@ class AuthService {
   }
 
   async changePassword(currentPassword, newPassword) {
-    const user = this.getCurrentUser();
-    if (!user) {
-      throw new Error('Usuario no autenticado');
-    }
-    
+    // El email lo extrae el backend del JWT — no se envía en el body
     const response = await axios.post(`${API_URL}/change-password`, {
-      email: user.email,
       currentPassword,
       newPassword
     });

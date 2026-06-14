@@ -6,10 +6,12 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
@@ -66,9 +68,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         // Validar token solo si el usuario existe
         if (userRepository.findByEmail(userEmail).isPresent()
             && jwtService.validateToken(jwt, userEmail)) {
-          // Crear objeto de autenticación
+          // Extraer rol del token y construir authorities para Spring Security
+          String role = jwtService.extractRole(jwt);
+          List<GrantedAuthority> authorities =
+              role != null ? List.of(new SimpleGrantedAuthority("ROLE_" + role)) : List.of();
           UsernamePasswordAuthenticationToken authToken =
-              new UsernamePasswordAuthenticationToken(userEmail, null, new ArrayList<>());
+              new UsernamePasswordAuthenticationToken(userEmail, null, authorities);
 
           authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 

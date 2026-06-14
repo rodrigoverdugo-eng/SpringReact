@@ -55,7 +55,10 @@ public class SecurityConfig {
                     // Rutas públicas de API (sin autenticación)
                     .requestMatchers("/api/auth/login", "/api/auth/refresh", "/api/auth/logout")
                     .permitAll()
-                    // Rutas de API protegidas requieren autenticación
+                    // Gestión de usuarios: solo ADMIN
+                    .requestMatchers("/api/users/**")
+                    .hasRole("ADMIN")
+                    // Resto de rutas de API requieren autenticación
                     .requestMatchers("/api/**")
                     .authenticated()
                     // Rutas SPA (no API): dejar pasar para que SpaController sirva index.html

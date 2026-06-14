@@ -21,6 +21,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.lang.NonNull;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
@@ -213,11 +214,12 @@ public class AuthController {
   // Cambiar contraseña
   @PostMapping("/change-password")
   public ResponseEntity<?> changePassword(@RequestBody @NonNull Map<String, String> request) {
-    String email = request.get("email");
+    // Email tomado del JWT autenticado — nunca del body (previene IDOR)
+    String email = SecurityContextHolder.getContext().getAuthentication().getName();
     String currentPassword = request.get("currentPassword");
     String newPassword = request.get("newPassword");
 
-    if (email == null || currentPassword == null || newPassword == null) {
+    if (currentPassword == null || newPassword == null) {
       return ResponseEntity.status(HttpStatus.BAD_REQUEST)
           .body(Map.of("message", "Todos los campos son requeridos"));
     }
