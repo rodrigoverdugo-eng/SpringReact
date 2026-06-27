@@ -138,6 +138,7 @@ public class UserController {
         .findById(id)
         .map(
             (@NonNull User user) -> {
+              loginHistoryRepository.deleteByUserId(user.getId());
               userRepository.delete(user);
               MDC.put("event", "USER_DELETED");
               MDC.put("user_id", String.valueOf(user.getId()));

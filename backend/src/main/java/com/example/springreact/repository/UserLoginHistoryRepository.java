@@ -17,4 +17,6 @@ public interface UserLoginHistoryRepository extends JpaRepository<UserLoginHisto
 
   @Query("SELECT h.user.id, MAX(h.loginAt) FROM UserLoginHistory h GROUP BY h.user.id")
   List<Object[]> findLastLoginPerUser();
+
+  void deleteByUserId(Long userId);
 }

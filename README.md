@@ -23,6 +23,7 @@ Aplicación web empresarial completa con autenticación JWT, sistema de roles y 
 - **Restricción de Acceso**: Solo ADMIN puede gestionar usuarios
 - **Historial de Actividad**: Modal para ver los últimos 20 logins de cada usuario (fecha + IP)
 - **Último Acceso Global**: Columna de último acceso visible en la tabla de usuarios
+- **Eliminación en Cascada**: Al eliminar un usuario se eliminan previamente sus registros de `user_login_history` para respetar la restricción de clave foránea
 
 ### 🎨 Interfaz de Usuario
 - **Diseño Empresarial Profesional**: UI moderna y limpia
@@ -494,7 +495,9 @@ En desarrollo local (`http://localhost`) la variable vale `false`; en producció
 3. **Email Único**: Validación en backend y frontend
 4. **Logout por Inactividad**: Sesión expira después de 10 minutos sin actividad
 5. **Rutas Protegidas**: Componente `PrivateRoute` valida autenticación
-6. **Autorización por Rol**: Endpoints protegidos según rol del usuario
+6. **Autorización por Rol en backend**: `SecurityConfig` restringe `/api/users/**` a `ROLE_ADMIN`; `JwtAuthenticationFilter` inyecta el rol del JWT como `GrantedAuthority` de Spring Security
+7. **Sin IDOR en cambio de contraseña**: El endpoint `/api/auth/change-password` obtiene el email del JWT autenticado, nunca del body de la petición
+8. **Rate limit no falsificable**: `RateLimitFilter` usa `request.getRemoteAddr()` (resuelta por Tomcat con `server.forward-headers-strategy=native`) en lugar de leer `X-Forwarded-For` manualmente
 
 ### Seguridad de URLs
 
@@ -522,6 +525,7 @@ Definidas en `SecurityFilterChain` con sesión **stateless** (sin sesión HTTP):
 | `/api/auth/login` | Público | Inicio de sesión |
 | `/api/auth/refresh` | Público | Renovación de token (lee cookie httpOnly) |
 | `/api/auth/logout` | Público | Invalidar cookie de refresh token |
+| `/api/users/**` | Solo ADMIN | Gestión de usuarios (CRUD, historial) |
 | `/api/**` | Autenticado (JWT) | Resto de endpoints de la API |
 | `/**` (cualquier otra) | Permitido | Rutas SPA servidas por `SpaController` → `index.html` |
 
@@ -600,7 +604,7 @@ server.port=8080
 spring.profiles.active=postgres
 
 # JPA/Hibernate
-spring.jpa.show-sql=true
+spring.jpa.show-sql=false
 spring.jackson.serialization.write-dates-as-timestamps=false
 
 # Versión de la aplicación (inyectada desde pom.xml por Maven)
@@ -844,6 +848,9 @@ useInactivityLogout(10);
 - [x] Access token en memoria (no persiste en localStorage)
 - [x] Headers de seguridad: CSP, XSS-Protection, Referrer-Policy
 - [x] Configurar CORS para dominio de producción
+- [x] RBAC en backend: `/api/users/**` restringido a ADMIN via Spring Security
+- [x] Sin IDOR: email del cambio de contraseña tomado del JWT, no del body
+- [x] Rate limit no falsificable: IP resuelta por Tomcat (no desde headers manuales)
 
 ### Monitoreo
 - [x] Implementar logging estructurado (formato Logstash JSON con MDC)

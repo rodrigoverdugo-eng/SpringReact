@@ -83,7 +83,7 @@ function Dashboard() {
 
           {currentView === 'home' && (
             <div className="card">
-              <h2 className="card-header">Bienvenido al {APP_TITLE}</h2>
+              <h2 className="card-header">Bienvenido a {APP_TITLE}</h2>
               <div className="card-body">
                 <div className="profile-info">
                   <p><strong>Nombre:</strong> {currentUser?.name}</p>
