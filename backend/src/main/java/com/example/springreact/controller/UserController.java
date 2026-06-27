@@ -19,6 +19,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.lang.NonNull;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 @Slf4j
@@ -132,6 +133,7 @@ public class UserController {
   }
 
   // Eliminar usuario
+  @Transactional
   @DeleteMapping("/{id}")
   public ResponseEntity<?> deleteUser(@PathVariable @NonNull Long id) {
     return userRepository
