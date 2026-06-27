@@ -489,6 +489,8 @@ function UserManagement() {
             <p className="confirm-message">
               ¿Estás seguro de que deseas eliminar a <strong>{confirmDialog.userName}</strong>?
               <br />
+              Su historial de actividad (logins) también será eliminado.
+              <br />
               <span className="confirm-warning">Esta acción no se puede deshacer.</span>
             </p>
             <div className="confirm-actions">

@@ -712,9 +712,25 @@ Los archivos optimizados estarán en `dist/`
 ## 🧪 Testing
 
 ### Backend
+
+Tests unitarios con **JUnit 5 + Mockito** (sin contexto Spring). Cubren:
+
+| Clase | Archivo | Tests |
+|---|---|---|
+| `JwtService` | `security/JwtServiceTest.java` | 16 |
+| `JwtAuthenticationFilter` | `security/JwtAuthenticationFilterTest.java` | 11 |
+| `RateLimitFilter` | `security/RateLimitFilterTest.java` | 5 |
+| `AuthController` | `controller/AuthControllerTest.java` | 18 |
+| `UserController` | `controller/UserControllerTest.java` | 16 |
+| `RoleController` | `controller/RoleControllerTest.java` | 2 |
+| `InfoController` | `controller/InfoControllerTest.java` | 1 |
+| `SpaController` | `controller/SpaControllerTest.java` | 1 |
+| `DataInitializer` | `config/DataInitializerTest.java` | 4 |
+| **Total** | | **74** |
+
 ```bash
 cd backend
-mvn test
+mvn test -Dskip.frontend=true
 ```
 
 ### Frontend
@@ -859,7 +875,8 @@ useInactivityLogout(10);
 - [ ] Alertas y notificaciones
 
 ### Testing
-- [ ] Tests unitarios (JUnit + Jest)
+- [x] Tests unitarios backend (JUnit 5 + Mockito, 74 tests)
+- [ ] Tests unitarios frontend (Jest/Vitest)
 - [ ] Tests de integración
 - [ ] Tests E2E (Cypress/Playwright)
 - [ ] Cobertura de código mínima 80%
