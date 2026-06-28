@@ -22,10 +22,37 @@
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
   font-size: 1em;
+  line-height: 1.5;
   transition: all var(--transition-fast);
   box-sizing: border-box;
   background-color: var(--color-bg-input);
   color: var(--color-text-primary);
+}
+
+.form-group input::placeholder,
+.form-group textarea::placeholder {
+  color: var(--color-text-muted);
+  opacity: 1;
+}
+
+.form-group textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.form-group select {
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%234a5568' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 16px;
+  padding-right: 36px;
+  cursor: pointer;
+}
+
+[data-theme="dark"] .form-group select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23a0aec0' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
 }
 
 .form-group input:focus,
@@ -34,15 +61,16 @@
   outline: none;
   border-color: var(--color-info);
   background-color: var(--color-bg-primary);
-  box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.1);
+  box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.18);
 }
 
 .form-group input:disabled,
 .form-group textarea:disabled,
 .form-group select:disabled {
-  background-color: var(--color-border-light);
+  background-color: var(--color-bg-subtle);
+  color: var(--color-text-muted);
   cursor: not-allowed;
-  opacity: 0.6;
+  opacity: 0.7;
 }
 
 /* Input con botón de mostrar/ocultar contraseña */
@@ -95,7 +123,7 @@
   border: 1px dashed var(--color-border);
   border-radius: var(--radius-sm);
   color: var(--color-text-secondary);
-  font-size: 0.82em;
+  font-size: 0.8em;
   font-weight: 500;
   padding: 6px 10px;
   cursor: pointer;
@@ -272,16 +300,22 @@
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
   font-size: 0.95em;
+  line-height: 1.5;
   transition: all var(--transition-fast);
   background-color: var(--color-bg-input);
   color: var(--color-text-primary);
+}
+
+.search-input::placeholder {
+  color: var(--color-text-muted);
+  opacity: 1;
 }
 
 .search-input:focus {
   outline: none;
   border-color: var(--color-info);
   background-color: var(--color-bg-primary);
-  box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.1);
+  box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.18);
 }
 
 .search-icon {
@@ -307,20 +341,32 @@
 }
 
 .select-small {
-  padding: 8px 12px;
+  padding: 8px 32px 8px 12px;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
   font-size: 0.9em;
+  line-height: 1.5;
   background-color: var(--color-bg-input);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%234a5568' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 14px;
   color: var(--color-text-primary);
   cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
   transition: all var(--transition-fast);
+}
+
+[data-theme="dark"] .select-small {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23a0aec0' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
 }
 
 .select-small:focus {
   outline: none;
   border-color: var(--color-info);
-  box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.1);
+  background-color: var(--color-bg-primary);
+  box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.18);
 }
 
 /* ========================================

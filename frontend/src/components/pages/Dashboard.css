@@ -25,7 +25,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  box-shadow: var(--shadow-sm);
   border-bottom: 1px solid var(--color-border-light);
   position: sticky;
   top: 0;
@@ -91,7 +91,7 @@
 }
 
 .topbar-last-login {
-  font-size: 0.7em;
+  font-size: 0.75em;
   color: var(--color-text-muted);
   line-height: 1.2;
 }
@@ -223,3 +223,160 @@
     justify-content: flex-end;
   }
 }
+
+/* ========================================
+   HOME VIEW — MÉTRICAS Y PERFIL
+   ======================================== */
+
+.home-view {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* Stat Cards Grid */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.stat-card {
+  background: var(--color-bg-primary);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border-light);
+  padding: 20px 24px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow var(--transition-fast), transform var(--transition-fast);
+}
+
+.stat-card:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+.stat-card__icon {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.stat-card--total .stat-card__icon {
+  background-color: #dbeafe;
+  color: #2563eb;
+}
+
+.stat-card--active .stat-card__icon {
+  background-color: #dcfce7;
+  color: #166534;
+}
+
+.stat-card--inactive .stat-card__icon {
+  background-color: #fee2e2;
+  color: #b91c1c;
+}
+
+.stat-card--pending .stat-card__icon {
+  background-color: #fef3c7;
+  color: #92400e;
+}
+
+[data-theme="dark"] .stat-card--total .stat-card__icon {
+  background-color: #1a365d;
+  color: #90cdf4;
+}
+
+[data-theme="dark"] .stat-card--active .stat-card__icon {
+  background-color: #1c4532;
+  color: #9ae6b4;
+}
+
+[data-theme="dark"] .stat-card--inactive .stat-card__icon {
+  background-color: #2d1515;
+  color: #fc8181;
+}
+
+[data-theme="dark"] .stat-card--pending .stat-card__icon {
+  background-color: #2d2006;
+  color: #fbd38d;
+}
+
+.stat-card__content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.stat-card__value {
+  font-size: 1.8em;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  line-height: 1;
+}
+
+.stat-card__label {
+  font-size: 0.85em;
+  color: var(--color-text-muted);
+  font-weight: 500;
+}
+
+/* Profile Card */
+.profile-grid {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.profile-avatar-large {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.8em;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.profile-name {
+  margin: 0 0 12px 0;
+  font-size: 1.2em;
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.profile-field {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--color-text-secondary);
+  font-size: 0.9em;
+  margin-bottom: 6px;
+}
+
+.profile-field svg {
+  color: var(--color-text-muted);
+  flex-shrink: 0;
+}
+
+@media (max-width: 480px) {
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .profile-grid {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+

@@ -19,28 +19,28 @@
   --color-success: #38a169;
   
   /* Colores de texto */
-  --color-text-primary: #2c3e50;
-  --color-text-secondary: #5a6c7d;
-  --color-text-muted: #718096;
+  --color-text-primary: #1a2533;
+  --color-text-secondary: #4a5568;
+  --color-text-muted: #5f6b7a;
   
   /* Fondos semánticos */
   --color-bg-primary: #ffffff;
-  --color-bg-page: #f5f7fa;
-  --color-bg-elevated: #f8f9fa;
-  --color-bg-subtle: #f7fafc;
-  --color-bg-input: #fafbfc;
-  --color-bg-light: #f5f7fa;
+  --color-bg-page: #e8edf3;
+  --color-bg-elevated: #f0f4f8;
+  --color-bg-subtle: #edf2f7;
+  --color-bg-input: #f7f9fb;
+  --color-bg-light: #e8edf3;
   
   /* Bordes */
-  --color-border: #cbd5e0;
-  --color-border-light: #e2e8f0;
+  --color-border: #b8c4d0;
+  --color-border-light: #d0dbe6;
   
   /* Sombras */
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06);
-  --shadow-md: 0 4px 12px rgba(44, 62, 80, 0.15);
-  --shadow-lg: 0 10px 40px rgba(0, 0, 0, 0.1);
-  --shadow-sidebar: 2px 0 8px rgba(0, 0, 0, 0.05);
-  --shadow-modal: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.10);
+  --shadow-md: 0 4px 12px rgba(44, 62, 80, 0.18);
+  --shadow-lg: 0 10px 40px rgba(0, 0, 0, 0.14);
+  --shadow-sidebar: 2px 0 8px rgba(0, 0, 0, 0.12);
+  --shadow-modal: 0 20px 25px -5px rgba(0, 0, 0, 0.14), 0 10px 10px -5px rgba(0, 0, 0, 0.07);
   
   /* Bordes redondeados */
   --radius-sm: 4px;
@@ -61,11 +61,11 @@
   --transition-slow: 0.5s ease;
 
   /* Navegación lateral */
-  --color-nav-hover-bg: #f5f7fa;
-  --color-nav-active-bg: #ebf8ff;
-  --color-nav-active-text: #3182ce;
-  --color-nav-active-border: #3182ce;
-  --color-submenu-item-hover: #e2e8f0;
+  --color-nav-hover-bg: #dde5ef;
+  --color-nav-active-bg: #dbeafe;
+  --color-nav-active-text: #2563eb;
+  --color-nav-active-border: #2563eb;
+  --color-submenu-item-hover: #d0dbe6;
 
   /* Botones de acción de tabla */
   --color-btn-edit-bg: #ebf8ff;
@@ -79,45 +79,45 @@
   --color-btn-activity-border: #c6f6d5;
 
   /* Logout */
-  --color-logout-bg: #fff5f5;
+  --color-logout-bg: #fee2e2;
 
   /* Tabla */
   --color-table-bg: #ffffff;
-  --color-table-header-bg: #f7fafc;
-  --color-table-row-hover: #f7fafc;
+  --color-table-header-bg: #e8edf3;
+  --color-table-row-hover: #ebf4ff;
 
   /* Modal / diálogo */
   --color-modal-bg: #ffffff;
-  --color-modal-close-hover: #f7fafc;
+  --color-modal-close-hover: #edf2f7;
   --color-confirm-bg: #ffffff;
-  --color-confirm-icon-bg: #fff5f5;
+  --color-confirm-icon-bg: #fee2e2;
 
   /* Toggle switch */
-  --color-toggle-inactive: #cbd5e0;
-  --color-toggle-inactive-hover: #a0aec0;
+  --color-toggle-inactive: #a0aec0;
+  --color-toggle-inactive-hover: #718096;
   --color-toggle-slider: #ffffff;
 
   /* Info block */
-  --color-users-info-bg: #f7fafc;
+  --color-users-info-bg: #edf2f7;
 
   /* Colores de enlace/acento de marca */
   --color-link: #667eea;
   --color-link-hover: #764ba2;
 
   /* Gradiente auth */
-  --color-auth-gradient-start: #f5f7fa;
-  --color-auth-gradient-end: #c3cfe2;
+  --color-auth-gradient-start: #dde5ef;
+  --color-auth-gradient-end: #b8c9dc;
 
   /* Mensajes de estado */
-  --color-error-bg: #fff5f5;
-  --color-error-text: #c53030;
-  --color-error-border: #fed7d7;
-  --color-success-bg: #f0fff4;
-  --color-success-text: #22543d;
-  --color-success-border: #c6f6d5;
-  --color-warning-bg: #fffbeb;
+  --color-error-bg: #fee2e2;
+  --color-error-text: #b91c1c;
+  --color-error-border: #fca5a5;
+  --color-success-bg: #dcfce7;
+  --color-success-text: #166534;
+  --color-success-border: #86efac;
+  --color-warning-bg: #fef3c7;
   --color-warning-text: #92400e;
-  --color-warning-border: #fde68a;
+  --color-warning-border: #fcd34d;
 }
 
 /* ========================================

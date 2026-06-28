@@ -27,10 +27,11 @@ Aplicación web empresarial completa con autenticación JWT, sistema de roles y 
 
 ### 🎨 Interfaz de Usuario
 - **Diseño Empresarial Profesional**: UI moderna y limpia
-- **Sistema de Diseño Modular**: Variables CSS centralizadas
+- **Sistema de Diseño Modular**: Variables CSS centralizadas con jerarquía visual clara
 - **Sidebar Colapsable**: Navegación responsive con toggle integrado en la cabecera
 - **Layout de Gestión**: Sidebar (logo+nav+pie usuario) + Topbar (breadcrumb + usuario/rol)
 - **Versión en Pie del Sidebar**: Número de versión del `pom.xml` mostrado en tiempo de ejecución
+- **Dashboard con Métricas**: Vista de inicio con tarjetas de estadísticas en tiempo real (total de usuarios, activos, inactivos, cambios de contraseña pendientes) para ADMIN; perfil visual con avatar para todos los roles
 - **Badges de Estado**: Visualización clara del estado del usuario
 - **Toast Notifications**: Notificaciones animadas de éxito/error con auto-dismiss (4s)
 - **Diálogo de Confirmación Personalizado**: Reemplaza `window.confirm()` con modal estilizado
@@ -58,6 +59,7 @@ Aplicación web empresarial completa con autenticación JWT, sistema de roles y 
 - **Vite 7.3.2** como build tool
 - **Axios 1.17.0** para peticiones HTTP
 - **lucide-react 1.17.0** para iconografía SVG (stroke-based, tree-shaking automático)
+- **Inter** (Google Fonts) como tipografía principal
 - **CSS Modular** con sistema de diseño
 - **Hooks Personalizados** (useInactivityLogout)
 
@@ -398,16 +400,17 @@ La aplicación implementa un sistema de temas completo:
 - **`color-scheme`**: Declarado en `:root` y `[data-theme="dark"]`, lo que adapta los controles nativos del navegador (dropdowns, scrollbars) al tema activo
 - **Fix autofill**: Mediante `-webkit-box-shadow` inset, los campos autocompletados respetan los colores del tema en lugar del fondo blanco forzado por el navegador
 - **Sombras adaptadas**: Variables `--shadow-sidebar` y `--shadow-modal` con valores diferenciados (más intensas en oscuro) para mantener visibilidad en ambos temas
+- **Modo claro mejorado**: Fondos diferenciados (página `#e8edf3` vs tarjetas `#ffffff`), bordes más visibles, sombras más pronunciadas y colores de texto con mayor contraste WCAG
 
 ```css
 /* Modo claro (por defecto en :root) */
 :root {
   color-scheme: light;
   --color-bg-primary: #ffffff;
-  --color-bg-page: #f5f7fa;
-  --color-text-primary: #2c3e50;
-  --shadow-sidebar: 2px 0 8px rgba(0, 0, 0, 0.05);
-  --shadow-modal: 0 20px 25px -5px rgba(0, 0, 0, 0.1), ...;
+  --color-bg-page: #e8edf3;       /* diferenciado del blanco de tarjetas */
+  --color-text-primary: #1a2533;  /* mayor contraste WCAG */
+  --shadow-sidebar: 2px 0 8px rgba(0, 0, 0, 0.12);
+  --shadow-modal: 0 20px 25px -5px rgba(0, 0, 0, 0.14), ...;
 }
 
 /* Modo oscuro */
@@ -421,6 +424,13 @@ La aplicación implementa un sistema de temas completo:
   /* ... resto de variables adaptadas ... */
 }
 ```
+
+### Tipografía
+
+- **Fuente principal**: [Inter](https://fonts.google.com/specimen/Inter) cargada vía Google Fonts con `preconnect` para carga optimizada
+- **Fallback**: `-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif`
+- **Tamaño base**: `16px` definido en `html`; todos los componentes usan `em`/`rem` relativos
+- **`line-height` base**: `1.6` en `body`; `1.5` en inputs y `1.3` en encabezados
 
 ### Variables CSS
 
@@ -441,17 +451,29 @@ El proyecto utiliza un sistema de diseño centralizado con variables CSS:
 --spacing-lg: 16px;
 --spacing-xl: 24px;
 
-/* Sombras */
---shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06);
---shadow-md: 0 4px 12px rgba(44, 62, 80, 0.15);
---shadow-lg: 0 10px 40px rgba(0, 0, 0, 0.1);
+/* Sombras (modo claro) */
+--shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.10);
+--shadow-md: 0 4px 12px rgba(44, 62, 80, 0.18);
+--shadow-lg: 0 10px 40px rgba(0, 0, 0, 0.14);
 ```
+
+### Formularios e Inputs
+
+Todos los controles de formulario están normalizados entre navegadores:
+
+- **`::placeholder`**: Color explícito (`--color-text-muted`) con `opacity: 1` — Firefox sin esto aplica opacidad reducida
+- **Select personalizado**: Flecha SVG vía `background-image` con `appearance: none`; la flecha cambia de color según el tema activo
+- **Textarea**: `resize: vertical` + `min-height: 80px`
+- **Estado disabled**: Fondo semántico (`--color-bg-subtle`) + texto `--color-text-muted`
+- **Focus ring**: `box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.18)` — visible en ambos temas
+- **`line-height: 1.5`** en todos los inputs para altura visual consistente
 
 ### Componentes Estilizados
 
 - **Botones**: Primary, Secondary, Danger, Edit, Delete
-- **Formularios**: Inputs, selects, checkboxes con validación visual
+- **Formularios**: Inputs, selects, textareas, checkboxes con validación visual y normalización cross-browser
 - **Tarjetas**: Cards con header y body
+- **Tarjetas de métricas**: Stat cards con color semántico por tipo (usuarios totales, activos, inactivos, pendientes)
 - **Badges**: Estados activo/inactivo
 - **Mensajes**: Error, success, warning, info
 
