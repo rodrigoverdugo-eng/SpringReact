@@ -9,7 +9,7 @@ import ChangePasswordPanel from '../features/ChangePasswordPanel';
 import AuthService from '../../services/AuthService';
 import UserService from '../../services/UserService';
 import useInactivityLogout from '../../hooks/useInactivityLogout';
-import { VIEW_LABELS } from '../../config/menuConfig';
+import { VIEW_LABELS, APP_LOCALE } from '../../config/menuConfig';
 
 function HomeView({ currentUser }) {
   const [stats, setStats] = useState(null);
@@ -84,7 +84,7 @@ function HomeView({ currentUser }) {
               {currentUser?.lastLoginAt && (
                 <div className="profile-field">
                   <Clock size={15} />
-                  <span>Último acceso: {new Date(currentUser.lastLoginAt).toLocaleString('es-ES')}</span>
+                  <span>Último acceso: {new Date(currentUser.lastLoginAt).toLocaleString(APP_LOCALE)}</span>
                 </div>
               )}
             </div>
@@ -140,7 +140,7 @@ function Dashboard() {
               <span className="topbar-role">{currentUser?.role?.descripcion}</span>
               {currentUser?.lastLoginAt && (
                 <span className="topbar-last-login" title="Último acceso">
-                  Último acceso: {new Date(currentUser.lastLoginAt).toLocaleString('es-ES')}
+                  Último acceso: {new Date(currentUser.lastLoginAt).toLocaleString(APP_LOCALE)}
                 </span>
               )}
             </div>

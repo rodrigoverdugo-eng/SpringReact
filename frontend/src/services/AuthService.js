@@ -17,16 +17,6 @@ class AuthService {
     return response.data;
   }
 
-  async register(userData) {
-    const response = await axios.post(`${API_URL}/register`, userData);
-    const { accessToken, ...user } = response.data;
-
-    _accessToken = accessToken;
-    localStorage.setItem('user', JSON.stringify(user));
-
-    return response.data;
-  }
-
   async refreshAccessToken() {
     try {
       // Sin body: el browser envía la cookie httpOnly automáticamente

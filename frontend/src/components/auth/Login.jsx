@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AuthService from '../../services/AuthService';
-import { CheckCircle, AlertCircle, X, Home, Eye, EyeOff } from 'lucide-react';
-import { APP_TITLE } from '../../config/menuConfig';
+import { CheckCircle, AlertCircle, X, Building2, Eye, EyeOff } from 'lucide-react';
+import { APP_TITLE, APP_TAGLINE } from '../../config/menuConfig';
 import '../../styles/main.css';
 import './Login.css';
 
@@ -73,20 +73,30 @@ function Login() {
         ))}
       </div>
 
-      <div className="login-container">
-      <div className="login-card">
-        <div className="login-header">
-          <Home className="company-icon" size={48} />
-          <h1>{APP_TITLE}</h1>
+      <div className="login-wrapper">
+        <div className="login-brand">
+          <div className="login-brand-content">
+            <Building2 className="brand-icon" size={64} />
+            <h1 className="brand-title">{APP_TITLE}</h1>
+            <div className="brand-divider" />
+            <p className="brand-tagline">{APP_TAGLINE}</p>
+          </div>
+          <p className="brand-footer">&copy; {new Date().getFullYear()} Todos los derechos reservados</p>
         </div>
-        <h2>Iniciar Sesión</h2>
+
+        <div className="login-form-panel">
+          <div className="login-form-content">
+            <h2>Iniciar Sesión</h2>
+            <p className="login-subtitle">Ingrese sus credenciales para acceder al sistema</p>
 
         <form onSubmit={handleSubmit}>
           <div className="form-group">
-            <label>Email</label>
+            <label>Correo electrónico</label>
             <input
               type="email"
-              placeholder="tu@email.com"
+              name="email"
+              autoComplete="email"
+              placeholder="usuario@empresa.com"
               value={formData.email}
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
               maxLength={100}
@@ -99,6 +109,8 @@ function Login() {
             <div className="password-wrapper">
               <input
                 type={showPassword ? 'text' : 'password'}
+                name="password"
+                autoComplete="current-password"
                 placeholder="••••••••"
                 value={formData.password}
                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
@@ -118,10 +130,11 @@ function Login() {
           </div>
 
           <button type="submit" className="btn btn-primary btn-block btn-lg" disabled={loading}>
-            {loading ? 'Cargando...' : 'Iniciar Sesión'}
+            {loading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
           </button>
         </form>
-      </div>
+          </div>
+        </div>
       </div>
     </>
   );

@@ -3,6 +3,12 @@ import { Home, Users, KeyRound, Settings } from 'lucide-react';
 // Título de la aplicación — fuente única: variable de entorno VITE_APP_TITLE (.env)
 export const APP_TITLE = import.meta.env.VITE_APP_TITLE ?? 'Sistema de Gestión';
 
+// Tagline del login — fuente única: variable de entorno VITE_APP_TAGLINE (.env)
+export const APP_TAGLINE = import.meta.env.VITE_APP_TAGLINE ?? 'Plataforma centralizada para la gestión de su organización.';
+
+// Locale de fechas — fuente única: variable de entorno VITE_APP_LOCALE (.env)
+export const APP_LOCALE = import.meta.env.VITE_APP_LOCALE ?? 'es-ES';
+
 /**
  * Definición del menú de navegación.
  *

@@ -28,6 +28,7 @@ Aplicación web empresarial completa con autenticación JWT, sistema de roles y 
 ### 🎨 Interfaz de Usuario
 - **Diseño Empresarial Profesional**: UI moderna y limpia
 - **Sistema de Diseño Modular**: Variables CSS centralizadas con jerarquía visual clara
+- **Login de Dos Paneles**: Panel izquierdo de marca (color corporativo, ícono, tagline) + panel derecho con el formulario; en móvil se adapta a layout vertical
 - **Sidebar Colapsable**: Navegación responsive con toggle integrado en la cabecera
 - **Layout de Gestión**: Sidebar (logo+nav+pie usuario) + Topbar (breadcrumb + usuario/rol)
 - **Versión en Pie del Sidebar**: Número de versión del `pom.xml` mostrado en tiempo de ejecución
@@ -37,6 +38,7 @@ Aplicación web empresarial completa con autenticación JWT, sistema de roles y 
 - **Diálogo de Confirmación Personalizado**: Reemplaza `window.confirm()` con modal estilizado
 - **Validación en Español**: Mensajes de validación de formularios en español
 - **Toggle Contraseña**: Botón para mostrar/ocultar la contraseña
+- **Accesibilidad de formularios**: Atributos `name` y `autocomplete` en los campos del login para compatibilidad con gestores de contraseñas y el autocompletado del navegador
 - **Generador de Contraseña Segura**: Genera contraseña aleatoria de 12 caracteres con botón de copiar al portapapeles
 - **Modo Oscuro / Claro**: Toggle en el sidebar para cambiar entre temas; preferencia persistida en `localStorage` y aplicada instantáneamente sin parpadeo
 - **Arquitectura Componetizada**: Organización por responsabilidades
@@ -127,7 +129,7 @@ SpringReact/
     │   ├── context/
     │   │   └── ThemeContext.jsx        # Contexto de tema oscuro/claro
     │   ├── config/
-    │   │   └── menuConfig.js          # Ítem de menú, permisos por rol y etiquetas de vistas
+    │   └── menuConfig.js          # Ítems de menú, permisos por rol, etiquetas de vistas, APP_TITLE, APP_TAGLINE, APP_LOCALE
     │   ├── hooks/
     │   │   └── useInactivityLogout.js # Hook de inactividad
     │   ├── styles/
@@ -188,6 +190,12 @@ JWT_SECRET=<clave-base64-segura-minimo-32-bytes>
 
 # Opcional: título de la aplicación (por defecto: Sistema de Gestión)
 VITE_APP_TITLE=Sistema de Gestión
+
+# Opcional: tagline del panel de marca en el login
+VITE_APP_TAGLINE=Plataforma centralizada para la gestión de su organización.
+
+# Opcional: locale para formateo de fechas (por defecto: es-ES)
+VITE_APP_LOCALE=es-ES
 
 # Opcional: cookie segura — false para HTTP local, true en producción con HTTPS
 COOKIE_SECURE=false
@@ -674,8 +682,10 @@ server.forward-headers-strategy=native
 export JWT_SECRET=<clave-base64-segura>
 
 # Opcionales (se pueden poner en un archivo .env en la raíz del proyecto)
-export VITE_APP_TITLE="Sistema de Gestión"   # título de la aplicación
-export COOKIE_SECURE=false                    # true en producción con HTTPS
+export VITE_APP_TITLE="Sistema de Gestión"                                    # título de la aplicación
+export VITE_APP_TAGLINE="Plataforma centralizada para la gestión de su organización."  # tagline del login
+export VITE_APP_LOCALE=es-ES                                                  # locale de fechas
+export COOKIE_SECURE=false                                                    # true en producción con HTTPS
 ```
 
 **Ejecutar:**
@@ -712,7 +722,14 @@ export default defineConfig({
 **Variables de Entorno (opcional):**
 Crear `.env` en la carpeta frontend:
 ```env
-VITE_API_URL=http://localhost:8080/api
+# Título mostrado en el login y el sidebar
+VITE_APP_TITLE=Sistema de Gestión
+
+# Tagline mostrado en el panel de marca del login
+VITE_APP_TAGLINE=Plataforma centralizada para la gestión de su organización.
+
+# Locale para formateo de fechas (lastLoginAt, etc.)
+VITE_APP_LOCALE=es-ES
 ```
 
 ## 📦 Build para Producción
