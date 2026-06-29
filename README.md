@@ -129,7 +129,7 @@ SpringReact/
     │   ├── context/
     │   │   └── ThemeContext.jsx        # Contexto de tema oscuro/claro
     │   ├── config/
-    │   └── menuConfig.js          # Ítems de menú, permisos por rol, etiquetas de vistas, APP_TITLE, APP_TAGLINE, APP_LOCALE
+    │   └── menuConfig.js          # Ítems de menú, permisos por rol, etiquetas de vistas, APP_TITLE, APP_LOCALE
     │   ├── hooks/
     │   │   └── useInactivityLogout.js # Hook de inactividad
     │   ├── styles/
@@ -190,12 +190,6 @@ JWT_SECRET=<clave-base64-segura-minimo-32-bytes>
 
 # Opcional: título de la aplicación (por defecto: Sistema de Gestión)
 VITE_APP_TITLE=Sistema de Gestión
-
-# Opcional: tagline del panel de marca en el login
-VITE_APP_TAGLINE=Plataforma centralizada para la gestión de su organización.
-
-# Opcional: locale para formateo de fechas (por defecto: es-ES)
-VITE_APP_LOCALE=es-ES
 
 # Opcional: cookie segura — false para HTTP local, true en producción con HTTPS
 COOKIE_SECURE=false
@@ -683,8 +677,6 @@ export JWT_SECRET=<clave-base64-segura>
 
 # Opcionales (se pueden poner en un archivo .env en la raíz del proyecto)
 export VITE_APP_TITLE="Sistema de Gestión"                                    # título de la aplicación
-export VITE_APP_TAGLINE="Plataforma centralizada para la gestión de su organización."  # tagline del login
-export VITE_APP_LOCALE=es-ES                                                  # locale de fechas
 export COOKIE_SECURE=false                                                    # true en producción con HTTPS
 ```
 
@@ -724,12 +716,6 @@ Crear `.env` en la carpeta frontend:
 ```env
 # Título mostrado en el login y el sidebar
 VITE_APP_TITLE=Sistema de Gestión
-
-# Tagline mostrado en el panel de marca del login
-VITE_APP_TAGLINE=Plataforma centralizada para la gestión de su organización.
-
-# Locale para formateo de fechas (lastLoginAt, etc.)
-VITE_APP_LOCALE=es-ES
 ```
 
 ## 📦 Build para Producción
@@ -868,7 +854,7 @@ useInactivityLogout(10);
 **Frontend:**
 - `Dashboard.jsx`: Contenedor principal con gestión de vistas y topbar (breadcrumb + usuario)
 - `Sidebar.jsx`: Navegación lateral con toggle integrado, filtrado por roles, usuario y versión en el pie; incluye botón de cambio de tema (sol/luna). Lee la configuración del menú desde `menuConfig.js`
-- `menuConfig.js`: Fuente única de verdad para ítems de menú (`MENU_ITEMS`), título de la aplicación (`APP_TITLE`) y etiquetas de breadcrumb (`VIEW_LABELS`). Permisos definidos con `roles: []` (array); `[]` indica acceso universal
+- `menuConfig.js`: Fuente única de verdad para ítems de menú (`MENU_ITEMS`), título de la aplicación (`APP_TITLE`), tagline del login (`APP_TAGLINE`) y etiquetas de breadcrumb (`VIEW_LABELS`). Permisos definidos con `roles: []` (array); `[]` indica acceso universal
 - `ThemeContext.jsx`: Contexto React para el tema oscuro/claro; provee `isDark` y `toggleTheme`
 - `UserManagement.jsx`: CRUD de usuarios con validaciones, modal de historial de actividad y columna de último acceso
 - `ChangePasswordPanel.jsx`: Panel de cambio de contraseña integrado en el dashboard (contraseña actual + nueva + confirmar)

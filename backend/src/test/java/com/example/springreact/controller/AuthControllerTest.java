@@ -34,6 +34,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 @ExtendWith(MockitoExtension.class)
+@SuppressWarnings("null")
 class AuthControllerTest {
 
   @Mock private UserRepository userRepository;
@@ -296,7 +297,7 @@ class AuthControllerTest {
     Map<String, String> body = Map.of("currentPassword", "old");
     when(securityContext.getAuthentication()).thenReturn(authentication);
 
-    ResponseEntity<?> result = controller.changePassword(Map.of("currentPassword", "old"));
+    ResponseEntity<?> result = controller.changePassword(body);
 
     assertEquals(HttpStatus.BAD_REQUEST, result.getStatusCode());
   }

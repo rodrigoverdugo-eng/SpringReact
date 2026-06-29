@@ -18,6 +18,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 @ExtendWith(MockitoExtension.class)
+@SuppressWarnings("null")
 class DataInitializerTest {
 
   @Mock private UserRepository userRepository;

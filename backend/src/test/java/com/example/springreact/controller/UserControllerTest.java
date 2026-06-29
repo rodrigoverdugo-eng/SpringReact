@@ -27,6 +27,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 @ExtendWith(MockitoExtension.class)
+@SuppressWarnings({"null", "unchecked"})
 class UserControllerTest {
 
   @Mock private UserRepository userRepository;

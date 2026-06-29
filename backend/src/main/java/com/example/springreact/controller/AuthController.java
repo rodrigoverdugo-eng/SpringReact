@@ -91,7 +91,7 @@ public class AuthController {
     LocalDateTime now = LocalDateTime.now();
     Optional<UserLoginHistory> previousLogin =
         loginHistoryRepository.findTopByUserIdOrderByLoginAtDesc(user.getId());
-    LocalDateTime lastLoginAt = previousLogin.map(UserLoginHistory::getLoginAt).orElse(now);
+    LocalDateTime lastLoginAt = previousLogin.map(h -> h.getLoginAt()).orElse(now);
 
     // Registrar el nuevo login
     String ipAddress = getClientIp(request);
