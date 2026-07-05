@@ -211,6 +211,46 @@ class UserControllerTest {
     assertEquals("encoded", userCaptor.getValue().getPassword());
   }
 
+  @Test
+  void createUser_shouldReturn400WhenPasswordInvalid() {
+    // Contraseña sin símbolo → falla isPasswordValid
+    User newUser = new User("New", "new@example.com", "NoSymbol1", adminRole);
+    when(userRepository.findByEmail("new@example.com")).thenReturn(Optional.empty());
+
+    ResponseEntity<?> result = controller.createUser(newUser);
+
+    assertEquals(HttpStatus.BAD_REQUEST, result.getStatusCode());
+    assertTrue(
+        ((Map<?, ?>) result.getBody()).get("message").toString().contains("al menos 8 caracteres"));
+  }
+
+  @Test
+  void updateUser_shouldReturn400WhenPasswordInvalid() {
+    // Usar email diferente para que pase la validación de email y llegue a la de contraseña
+    User updatedDetails = new User("Admin", "admin@example.com", "noSymbol1", adminRole);
+
+    when(userRepository.findById(1L)).thenReturn(Optional.of(adminUser));
+    // Mismo email que el existente → no llama a findByEmail
+    ResponseEntity<?> result = controller.updateUser(1L, updatedDetails);
+
+    assertEquals(HttpStatus.BAD_REQUEST, result.getStatusCode());
+  }
+
+  @Test
+  void updateUser_shouldSkipRoleUpdateWhenRoleIdIsNull() {
+    // roleId == null → no busca en roleRepository
+    User updatedDetails = new User("Admin", "admin@example.com", null, new Role(null, null, null));
+
+    when(userRepository.findById(1L)).thenReturn(Optional.of(adminUser));
+    // Mismo email → findByEmail no se llama
+    when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+    ResponseEntity<?> result = controller.updateUser(1L, updatedDetails);
+
+    assertEquals(HttpStatus.OK, result.getStatusCode());
+    verifyNoInteractions(roleRepository);
+  }
+
   // --- DELETE USER ---
 
   @Test

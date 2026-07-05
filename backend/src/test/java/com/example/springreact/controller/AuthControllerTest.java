@@ -363,4 +363,68 @@ class AuthControllerTest {
     assertEquals("new-encoded", saved.getPassword());
     assertFalse(saved.getRequiresPasswordChange());
   }
+
+  @Test
+  void changePassword_shouldReturn400WhenPasswordDoesNotMeetPolicy() {
+    User user = new User("User", "user@example.com", "encoded", userRole);
+
+    when(securityContext.getAuthentication()).thenReturn(authentication);
+    when(authentication.getName()).thenReturn("user@example.com");
+    when(userRepository.findByEmail("user@example.com")).thenReturn(Optional.of(user));
+    when(passwordEncoder.matches("correct", "encoded")).thenReturn(true);
+
+    // Contraseña sin símbolo especial → falla la política
+    ResponseEntity<?> result =
+        controller.changePassword(Map.of("currentPassword", "correct", "newPassword", "NoSymbol1"));
+
+    assertEquals(HttpStatus.BAD_REQUEST, result.getStatusCode());
+  }
+
+  // --- getClientIp ---
+
+  @Test
+  void login_shouldExtractClientIpFromXRealIPHeader() {
+    User user = new User("Test", "test@example.com", "encoded", adminRole);
+    user.setId(1L);
+    Map<String, String> credentials = Map.of("email", "test@example.com", "password", "pass");
+    MockHttpServletRequest request = new MockHttpServletRequest();
+    // Simular proxy con X-Real-IP
+    request.addHeader("X-Real-IP", "10.10.10.10");
+    MockHttpServletResponse response = new MockHttpServletResponse();
+
+    when(userRepository.findByEmail("test@example.com")).thenReturn(Optional.of(user));
+    when(passwordEncoder.matches("pass", "encoded")).thenReturn(true);
+    when(loginHistoryRepository.findTopByUserIdOrderByLoginAtDesc(1L)).thenReturn(Optional.empty());
+    when(jwtService.generateAccessToken(anyString(), any(), anyString(), anyString()))
+        .thenReturn("access-token");
+    when(jwtService.generateRefreshToken(anyString())).thenReturn("refresh-token");
+
+    controller.login(credentials, request, response);
+
+    verify(loginHistoryRepository).save(loginHistoryCaptor.capture());
+    assertEquals("10.10.10.10", loginHistoryCaptor.getValue().getIpAddress());
+  }
+
+  @Test
+  void login_shouldExtractClientIpFromXForwardedForHeader() {
+    User user = new User("Test", "test@example.com", "encoded", adminRole);
+    user.setId(1L);
+    Map<String, String> credentials = Map.of("email", "test@example.com", "password", "pass");
+    MockHttpServletRequest request = new MockHttpServletRequest();
+    // Simular proxy con X-Forwarded-For (primer IP es la del cliente)
+    request.addHeader("X-Forwarded-For", "1.2.3.4, 5.6.7.8");
+    MockHttpServletResponse response = new MockHttpServletResponse();
+
+    when(userRepository.findByEmail("test@example.com")).thenReturn(Optional.of(user));
+    when(passwordEncoder.matches("pass", "encoded")).thenReturn(true);
+    when(loginHistoryRepository.findTopByUserIdOrderByLoginAtDesc(1L)).thenReturn(Optional.empty());
+    when(jwtService.generateAccessToken(anyString(), any(), anyString(), anyString()))
+        .thenReturn("access-token");
+    when(jwtService.generateRefreshToken(anyString())).thenReturn("refresh-token");
+
+    controller.login(credentials, request, response);
+
+    verify(loginHistoryRepository).save(loginHistoryCaptor.capture());
+    assertEquals("1.2.3.4", loginHistoryCaptor.getValue().getIpAddress());
+  }
 }

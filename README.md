@@ -747,26 +747,90 @@ Tests unitarios con **JUnit 5 + Mockito** (sin contexto Spring). Cubren:
 | Clase | Archivo | Tests |
 |---|---|---|
 | `JwtService` | `security/JwtServiceTest.java` | 16 |
-| `JwtAuthenticationFilter` | `security/JwtAuthenticationFilterTest.java` | 11 |
+| `JwtAuthenticationFilter` | `security/JwtAuthenticationFilterTest.java` | 25 |
 | `RateLimitFilter` | `security/RateLimitFilterTest.java` | 5 |
-| `AuthController` | `controller/AuthControllerTest.java` | 18 |
-| `UserController` | `controller/UserControllerTest.java` | 16 |
+| `AuthController` | `controller/AuthControllerTest.java` | 21 |
+| `UserController` | `controller/UserControllerTest.java` | 19 |
 | `RoleController` | `controller/RoleControllerTest.java` | 2 |
 | `InfoController` | `controller/InfoControllerTest.java` | 1 |
 | `SpaController` | `controller/SpaControllerTest.java` | 1 |
 | `DataInitializer` | `config/DataInitializerTest.java` | 4 |
-| **Total** | | **74** |
+| **Total** | | **94** |
 
 ```bash
 cd backend
 mvn test -Dskip.frontend=true
 ```
 
+**Cobertura con JaCoCo (mínimo 80%):**
+```bash
+cd backend
+mvn verify -Dskip.frontend=true
+```
+
+> El goal `jacoco:check` falla el build automáticamente si la cobertura de instrucciones o ramas cae por debajo del 80%.
+
+**Ver el informe HTML:**
+```bash
+# Abrir directamente en el navegador
+xdg-open backend/target/site/jacoco/index.html
+
+# O también con solo generar el informe sin ejecutar el check:
+cd backend
+mvn test jacoco:report -Dskip.frontend=true
+```
+
+El informe se encuentra en `backend/target/site/jacoco/index.html` y permite navegar por paquete → clase → código fuente con líneas marcadas en:
+- 🟢 **Verde**: línea/rama cubierta por tests
+- 🔴 **Rojo**: línea/rama no cubierta
+- 🟡 **Amarillo**: rama parcialmente cubierta
+
+Cobertura actual (clases excluidas: `SpringReactApplication`, modelos, `SecurityConfig`, `RateLimitConfig`):
+
+| Métrica | Cobertura |
+|---------|-----------|
+| Instrucciones | 85% |
+| Ramas | 86% |
+
 ### Frontend
+
+Tests unitarios con **Vitest + @testing-library/react**. Cubren:
+
+| Módulo | Archivo | Tests |
+|--------|---------|-------|
+| `utils/passwordValidation.js` | `test/passwordValidation.test.js` | 10 |
+| `services/AuthService.js` | `test/AuthService.test.js` | 26 |
+| **Total** | | **36** |
+
 ```bash
 cd frontend
-npm test
+npm test                 # ejecutar tests (una sola vez)
+npm run test:watch       # modo watch (re-ejecuta al guardar)
+npm run test:coverage    # tests + informe de cobertura
 ```
+
+**Ver el informe HTML:**
+```bash
+# Generar el informe
+cd frontend
+npm run test:coverage
+
+# Abrir en el navegador
+xdg-open frontend/coverage/index.html
+```
+
+El informe se encuentra en `frontend/coverage/index.html` (generado por **istanbul/v8**) y permite navegar por directorio → archivo → código fuente con el mismo código de colores que JaCoCo.
+
+Cobertura actual de los módulos incluidos:
+
+| Métrica | Cobertura |
+|---------|-----------|
+| Statements | 100% |
+| Branches | 100% |
+| Functions | 100% |
+| Lines | 100% |
+
+> **Nota**: El umbral mínimo del 80% aplica sobre los archivos incluidos en cobertura (`src/services/`, `src/utils/`). Los archivos excluidos explícitamente son: `main.jsx`, `index.jsx`, `src/styles/**`, `src/config/**`.
 
 ## 📚 Documentación Adicional
 
@@ -905,11 +969,11 @@ useInactivityLogout(10);
 - [ ] Alertas y notificaciones
 
 ### Testing
-- [x] Tests unitarios backend (JUnit 5 + Mockito, 74 tests)
-- [ ] Tests unitarios frontend (Jest/Vitest)
+- [x] Tests unitarios backend (JUnit 5 + Mockito, 94 tests)
+- [x] Tests unitarios frontend (Vitest, 36 tests)
 - [ ] Tests de integración
 - [ ] Tests E2E (Cypress/Playwright)
-- [ ] Cobertura de código mínima 80%
+- [x] Cobertura de código mínima 80%
 
 ### DevOps
 - [x] Dockerizar aplicación (Dockerfile multi-stage + Docker Compose)
