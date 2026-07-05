@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Eye, EyeOff, CheckCircle, AlertCircle, X } from 'lucide-react';
 import AuthService from '../../services/AuthService';
+import { validatePassword, PASSWORD_RULES } from '../../utils/passwordValidation';
 import '../../styles/main.css';
 
 function ChangePasswordPanel() {
@@ -37,8 +38,9 @@ function ChangePasswordPanel() {
       return;
     }
 
-    if (formData.newPassword.length < 6) {
-      showToast('error', 'Error de validación', 'La contraseña debe tener al menos 6 caracteres');
+    const { isValid: pwValid, errors: pwErrors } = validatePassword(formData.newPassword);
+    if (!pwValid) {
+      showToast('error', 'Contraseña insegura', pwErrors[0]);
       return;
     }
 
@@ -110,7 +112,7 @@ function ChangePasswordPanel() {
                   value={formData.newPassword}
                   onChange={(e) => setFormData({ ...formData, newPassword: e.target.value })}
                   required
-                  minLength={6}
+                  minLength={8}
                   maxLength={50}
                   autoComplete="new-password"
                 />
@@ -118,6 +120,15 @@ function ChangePasswordPanel() {
                   {showNew ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
               </div>
+              {formData.newPassword && (
+                <ul className="password-requirements">
+                  {PASSWORD_RULES.map(rule => (
+                    <li key={rule.id} className={rule.test(formData.newPassword) ? 'req-met' : 'req-unmet'}>
+                      {rule.test(formData.newPassword) ? '✓' : '✗'} {rule.label}
+                    </li>
+                  ))}
+                </ul>
+              )}
             </div>
 
             <div className="form-group">
@@ -129,7 +140,7 @@ function ChangePasswordPanel() {
                   value={formData.confirmPassword}
                   onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
                   required
-                  minLength={6}
+                  minLength={8}
                   maxLength={50}
                   autoComplete="new-password"
                 />

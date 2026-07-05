@@ -57,6 +57,15 @@ public class UserController {
           .body(Map.of("message", "El email ya está registrado"));
     }
 
+    // Validar política de contraseña
+    if (!isPasswordValid(user.getPassword())) {
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+          .body(
+              Map.of(
+                  "message",
+                  "La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula, un número y un símbolo"));
+    }
+
     // Hashear password antes de guardar
     user.setPassword(passwordEncoder.encode(user.getPassword()));
     // Establecer que requiere cambio de contraseña
@@ -118,6 +127,14 @@ public class UserController {
                 }
               }
               if (userDetails.getPassword() != null && !userDetails.getPassword().isEmpty()) {
+                // Validar política de contraseña
+                if (!isPasswordValid(userDetails.getPassword())) {
+                  return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                      .body(
+                          Map.of(
+                              "message",
+                              "La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula, un número y un símbolo"));
+                }
                 // Hashear password antes de actualizar
                 user.setPassword(passwordEncoder.encode(userDetails.getPassword()));
               }
@@ -194,5 +211,14 @@ public class UserController {
                 })
             .collect(Collectors.toList());
     return ResponseEntity.ok(result);
+  }
+
+  private static boolean isPasswordValid(String password) {
+    if (password == null || password.length() < 8) return false;
+    boolean hasUpper = password.chars().anyMatch(Character::isUpperCase);
+    boolean hasLower = password.chars().anyMatch(Character::isLowerCase);
+    boolean hasDigit = password.chars().anyMatch(Character::isDigit);
+    boolean hasSpecial = password.chars().anyMatch(c -> !Character.isLetterOrDigit(c));
+    return hasUpper && hasLower && hasDigit && hasSpecial;
   }
 }

@@ -40,6 +40,7 @@ Aplicación web empresarial completa con autenticación JWT, sistema de roles y 
 - **Toggle Contraseña**: Botón para mostrar/ocultar la contraseña
 - **Accesibilidad de formularios**: Atributos `name` y `autocomplete` en los campos del login para compatibilidad con gestores de contraseñas y el autocompletado del navegador
 - **Generador de Contraseña Segura**: Genera contraseña aleatoria de 12 caracteres con botón de copiar al portapapeles
+- **Política de Contraseña con Checklist Visual**: Al escribir una nueva contraseña se muestra una lista en tiempo real de los requisitos cumplidos/pendientes (longitud, mayúscula, minúscula, número, símbolo)
 - **Modo Oscuro / Claro**: Toggle en el sidebar para cambiar entre temas; preferencia persistida en `localStorage` y aplicada instantáneamente sin parpadeo
 - **Arquitectura Componetizada**: Organización por responsabilidades
 
@@ -132,6 +133,8 @@ SpringReact/
     │   └── menuConfig.js          # Ítems de menú, permisos por rol, etiquetas de vistas, APP_TITLE, APP_LOCALE
     │   ├── hooks/
     │   │   └── useInactivityLogout.js # Hook de inactividad
+    │   ├── utils/
+    │   │   └── passwordValidation.js  # Reglas y validador de política de contraseña
     │   ├── styles/
     │   │   ├── base/                  # Estilos base
     │   │   │   ├── variables.css
@@ -522,6 +525,7 @@ En desarrollo local (`http://localhost`) la variable vale `false`; en producció
 6. **Autorización por Rol en backend**: `SecurityConfig` restringe `/api/users/**` a `ROLE_ADMIN`; `JwtAuthenticationFilter` inyecta el rol del JWT como `GrantedAuthority` de Spring Security
 7. **Sin IDOR en cambio de contraseña**: El endpoint `/api/auth/change-password` obtiene el email del JWT autenticado, nunca del body de la petición
 8. **Rate limit no falsificable**: `RateLimitFilter` usa `request.getRemoteAddr()` (resuelta por Tomcat con `server.forward-headers-strategy=native`) en lugar de leer `X-Forwarded-For` manualmente
+9. **Política de Contraseña**: Las contraseñas nuevas deben cumplir: mínimo 8 caracteres, al menos una mayúscula, una minúscula, un número y un símbolo. Validación aplicada en frontend (tiempo real con checklist) y en backend (`AuthController`, `UserController`)
 
 ### Seguridad de URLs
 
@@ -845,9 +849,10 @@ useInactivityLogout(10);
 
 1. Usuario con `requiresPasswordChange=true` es redirigido a `/change-password`
 2. Usuario ingresa contraseña actual y nueva contraseña
-3. Backend valida contraseña actual y actualiza
-4. Se marca `requiresPasswordChange=false`
-5. Usuario es redirigido al dashboard
+3. Frontend valida en tiempo real que la nueva contraseña cumpla la política (8+ caracteres, mayúscula, minúscula, número, símbolo) mostrando un checklist visual
+4. Backend verifica usuario activo → contraseña actual correcta → política de contraseña → actualiza
+5. Se marca `requiresPasswordChange=false`
+6. Usuario es redirigido al dashboard
 
 ### Componentes Principales
 
@@ -857,9 +862,9 @@ useInactivityLogout(10);
 - `menuConfig.js`: Fuente única de verdad para ítems de menú (`MENU_ITEMS`), título de la aplicación (`APP_TITLE`), tagline del login (`APP_TAGLINE`) y etiquetas de breadcrumb (`VIEW_LABELS`). Permisos definidos con `roles: []` (array); `[]` indica acceso universal
 - `ThemeContext.jsx`: Contexto React para el tema oscuro/claro; provee `isDark` y `toggleTheme`
 - `UserManagement.jsx`: CRUD de usuarios con validaciones, modal de historial de actividad y columna de último acceso
-- `ChangePasswordPanel.jsx`: Panel de cambio de contraseña integrado en el dashboard (contraseña actual + nueva + confirmar)
+- `ChangePasswordPanel.jsx`: Panel de cambio de contraseña integrado en el dashboard (contraseña actual + nueva + confirmar), con checklist de política en tiempo real
 - `Login.jsx`: Formulario de autenticación
-- `ChangePassword.jsx`: Formulario de cambio de contraseña obligatorio (primer login)
+- `ChangePassword.jsx`: Formulario de cambio de contraseña obligatorio (primer login), con checklist de política en tiempo real
 - `PrivateRoute.jsx`: HOC para proteger rutas
 
 **Backend:**

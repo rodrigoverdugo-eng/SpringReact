@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import UserService from '../../services/UserService';
 import RoleService from '../../services/RoleService';
 import { CheckCircle, AlertCircle, X, Plus, Search, Edit, Clock, Trash2, Check, Copy, Eye, EyeOff, RefreshCw } from 'lucide-react';
+import { validatePassword } from '../../utils/passwordValidation';
 import '../../styles/main.css';
 
 function UserManagement() {
@@ -145,13 +146,19 @@ function UserManagement() {
       setModalError('La contraseña es obligatoria.');
       return;
     }
-    if (!editingId && formData.password.length < 6) {
-      setModalError('La contraseña debe tener al menos 6 caracteres.');
-      return;
+    if (!editingId) {
+      const { isValid, errors } = validatePassword(formData.password);
+      if (!isValid) {
+        setModalError(errors[0]);
+        return;
+      }
     }
-    if (editingId && formData.password && formData.password.length < 6) {
-      setModalError('La contraseña debe tener al menos 6 caracteres.');
-      return;
+    if (editingId && formData.password) {
+      const { isValid, errors } = validatePassword(formData.password);
+      if (!isValid) {
+        setModalError(errors[0]);
+        return;
+      }
     }
     if (!formData.role) {
       setModalError('Debes seleccionar un rol.');

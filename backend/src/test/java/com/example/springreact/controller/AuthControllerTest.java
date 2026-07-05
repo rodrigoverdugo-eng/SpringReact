@@ -352,10 +352,10 @@ class AuthControllerTest {
     when(authentication.getName()).thenReturn("user@example.com");
     when(userRepository.findByEmail("user@example.com")).thenReturn(Optional.of(user));
     when(passwordEncoder.matches("correct", "encoded")).thenReturn(true);
-    when(passwordEncoder.encode("newPass")).thenReturn("new-encoded");
+    when(passwordEncoder.encode("NewPass1!")).thenReturn("new-encoded");
 
     ResponseEntity<?> result =
-        controller.changePassword(Map.of("currentPassword", "correct", "newPassword", "newPass"));
+        controller.changePassword(Map.of("currentPassword", "correct", "newPassword", "NewPass1!"));
 
     assertEquals(HttpStatus.OK, result.getStatusCode());
     verify(userRepository).save(userCaptor.capture());

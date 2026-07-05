@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AuthService from '../../services/AuthService';
+import { validatePassword, PASSWORD_RULES } from '../../utils/passwordValidation';
 import '../../styles/main.css';
 import './ChangePassword.css';
 
@@ -41,8 +42,9 @@ function ChangePassword() {
       return;
     }
 
-    if (formData.newPassword.length < 6) {
-      showToast('error', 'Error de validación', 'La contraseña debe tener al menos 6 caracteres');
+    const { isValid: pwValid, errors: pwErrors } = validatePassword(formData.newPassword);
+    if (!pwValid) {
+      showToast('error', 'Contraseña insegura', pwErrors[0]);
       return;
     }
 
@@ -147,7 +149,7 @@ function ChangePassword() {
                 value={formData.newPassword}
                 onChange={(e) => setFormData({ ...formData, newPassword: e.target.value })}
                 required
-                minLength={6}
+                minLength={8}
                 maxLength={50}
                 autoComplete="new-password"
               />
@@ -166,6 +168,15 @@ function ChangePassword() {
                 )}
               </button>
             </div>
+            {formData.newPassword && (
+              <ul className="password-requirements">
+                {PASSWORD_RULES.map(rule => (
+                  <li key={rule.id} className={rule.test(formData.newPassword) ? 'req-met' : 'req-unmet'}>
+                    {rule.test(formData.newPassword) ? '✓' : '✗'} {rule.label}
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
 
           <div className="form-group">
@@ -177,7 +188,7 @@ function ChangePassword() {
                 value={formData.confirmPassword}
                 onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
                 required
-                minLength={6}
+                minLength={8}
                 maxLength={50}
                 autoComplete="new-password"
               />

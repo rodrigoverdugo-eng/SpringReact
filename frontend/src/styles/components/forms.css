@@ -729,3 +729,30 @@
     width: 100%;
   }
 }
+
+/* ========================================
+   PASSWORD REQUIREMENTS CHECKLIST
+   ======================================== */
+
+.password-requirements {
+  list-style: none;
+  margin: 6px 0 0;
+  padding: 0;
+  font-size: 0.8em;
+}
+
+.password-requirements li {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 0;
+  transition: color 0.2s;
+}
+
+.password-requirements li.req-met {
+  color: var(--color-success, #22c55e);
+}
+
+.password-requirements li.req-unmet {
+  color: var(--color-text-muted);
+}

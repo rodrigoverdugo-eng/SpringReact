@@ -102,9 +102,9 @@ class UserControllerTest {
 
   @Test
   void createUser_shouldEncodePasswordAndSetRequiresPasswordChange() {
-    User newUser = new User("New", "new@example.com", "raw-pass", adminRole);
+    User newUser = new User("New", "new@example.com", "RawPass1!", adminRole);
     when(userRepository.findByEmail("new@example.com")).thenReturn(Optional.empty());
-    when(passwordEncoder.encode("raw-pass")).thenReturn("encoded-pass");
+    when(passwordEncoder.encode("RawPass1!")).thenReturn("encoded-pass");
     when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
     ResponseEntity<?> result = controller.createUser(newUser);
@@ -118,9 +118,9 @@ class UserControllerTest {
 
   @Test
   void createUser_shouldAssignUserRoleWhenNoRoleProvided() {
-    User newUser = new User("New", "new@example.com", "pass", null);
+    User newUser = new User("New", "new@example.com", "Pass1!word", null);
     when(userRepository.findByEmail("new@example.com")).thenReturn(Optional.empty());
-    when(passwordEncoder.encode("pass")).thenReturn("enc");
+    when(passwordEncoder.encode("Pass1!word")).thenReturn("enc");
     when(roleRepository.findByName("USER")).thenReturn(Optional.of(userRole));
     when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
@@ -136,10 +136,10 @@ class UserControllerTest {
     partialRole.setRole(new Role(99L, null, null));
     partialRole.setName("New");
     partialRole.setEmail("new@example.com");
-    partialRole.setPassword("pass");
+    partialRole.setPassword("Pass1!word");
 
     when(userRepository.findByEmail("new@example.com")).thenReturn(Optional.empty());
-    when(passwordEncoder.encode("pass")).thenReturn("enc");
+    when(passwordEncoder.encode("Pass1!word")).thenReturn("enc");
     when(roleRepository.findById(99L)).thenReturn(Optional.of(adminRole));
     when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
@@ -176,14 +176,14 @@ class UserControllerTest {
   @Test
   void updateUser_shouldUpdateFields() {
     Role updatedRole = new Role(2L, "USER", "User");
-    User updatedDetails = new User("New Name", "new@example.com", "new-pass", updatedRole);
+    User updatedDetails = new User("New Name", "new@example.com", "NewPass1!", updatedRole);
     updatedDetails.setVigencia(false);
     updatedDetails.setRequiresPasswordChange(true);
 
     when(userRepository.findById(1L)).thenReturn(Optional.of(adminUser));
     when(userRepository.findByEmail("new@example.com")).thenReturn(Optional.empty());
     when(roleRepository.findById(2L)).thenReturn(Optional.of(userRole));
-    when(passwordEncoder.encode("new-pass")).thenReturn("encoded-new");
+    when(passwordEncoder.encode("NewPass1!")).thenReturn("encoded-new");
     when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
     ResponseEntity<?> result = controller.updateUser(1L, updatedDetails);

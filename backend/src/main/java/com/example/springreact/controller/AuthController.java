@@ -245,6 +245,15 @@ public class AuthController {
           .body(Map.of("message", "Contraseña actual incorrecta"));
     }
 
+    // Validar política de contraseña
+    if (!isPasswordValid(newPassword)) {
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+          .body(
+              Map.of(
+                  "message",
+                  "La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula, un número y un símbolo"));
+    }
+
     // Actualizar contraseña y marcar que ya no requiere cambio
     user.setPassword(passwordEncoder.encode(newPassword));
     user.setRequiresPasswordChange(false);
@@ -256,6 +265,15 @@ public class AuthController {
     MDC.clear();
 
     return ResponseEntity.ok(Map.of("message", "Contraseña actualizada exitosamente"));
+  }
+
+  private static boolean isPasswordValid(String password) {
+    if (password == null || password.length() < 8) return false;
+    boolean hasUpper = password.chars().anyMatch(Character::isUpperCase);
+    boolean hasLower = password.chars().anyMatch(Character::isLowerCase);
+    boolean hasDigit = password.chars().anyMatch(Character::isDigit);
+    boolean hasSpecial = password.chars().anyMatch(c -> !Character.isLetterOrDigit(c));
+    return hasUpper && hasLower && hasDigit && hasSpecial;
   }
 
   private String getClientIp(HttpServletRequest request) {
