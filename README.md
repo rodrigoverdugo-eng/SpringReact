@@ -293,6 +293,14 @@ Al iniciar la aplicación, se crean automáticamente:
 |--------|----------|-------------|--------|
 | GET | `/api/info/version` | Versión de la aplicación | Autenticado |
 
+### Monitoreo (Actuator)
+| Método | Endpoint | Descripción | Acceso |
+|--------|----------|-------------|--------|
+| GET | `/actuator/health` | Estado de la app y sus componentes | Público (detalles solo ADMIN) |
+| GET | `/actuator/info` | Nombre y versión de la aplicación | ADMIN |
+| GET | `/actuator/metrics` | Lista de métricas disponibles | ADMIN |
+| GET | `/actuator/metrics/{nombre}` | Valor de una métrica específica | ADMIN |
+
 ### 📝 Ejemplos de Peticiones
 
 **Login:**
@@ -941,6 +949,147 @@ useInactivityLogout(10);
 - `JwtService.java`: Generación y validación de tokens
 - `DataInitializer.java`: Inicialización de datos por defecto
 
+### Actuator y Health Checks
+
+Spring Boot Actuator expone endpoints de monitoreo en `/actuator`. La configuración activa tres endpoints: `health`, `info` y `metrics`.
+
+#### `/actuator/health` — Estado de la aplicación
+
+Accesible **sin autenticación** (útil para health probes de Docker/Kubernetes/balanceadores):
+
+```bash
+curl http://localhost:8080/actuator/health
+```
+
+Respuesta sin autenticación (estado general):
+```json
+{
+  "status": "UP"
+}
+```
+
+Respuesta con JWT ADMIN (muestra componentes internos):
+```bash
+curl http://localhost:8080/actuator/health \
+  -H "Authorization: Bearer <token-admin>"
+```
+```json
+{
+  "status": "UP",
+  "components": {
+    "db": {
+      "status": "UP",
+      "details": {
+        "database": "PostgreSQL",
+        "validationQuery": "isValid()"
+      }
+    },
+    "diskSpace": {
+      "status": "UP",
+      "details": {
+        "total": 499963174912,
+        "free": 321345536000,
+        "threshold": 10485760
+      }
+    },
+    "ping": { "status": "UP" }
+  }
+}
+```
+
+> **Estados posibles**: `UP` (todo OK), `DOWN` (algún componente falla), `OUT_OF_SERVICE` (fuera de servicio), `UNKNOWN`.
+
+#### `/actuator/info` — Información de la aplicación
+
+Requiere JWT de usuario ADMIN:
+
+```bash
+curl http://localhost:8080/actuator/info \
+  -H "Authorization: Bearer <token-admin>"
+```
+```json
+{
+  "app": {
+    "name": "SpringReact Backend",
+    "version": "1.0.2"
+  }
+}
+```
+
+#### `/actuator/metrics` — Métricas disponibles
+
+Requiere JWT de usuario ADMIN. Devuelve el catálogo de métricas disponibles:
+
+```bash
+curl http://localhost:8080/actuator/metrics \
+  -H "Authorization: Bearer <token-admin>"
+```
+```json
+{
+  "names": [
+    "hikaricp.connections",
+    "hikaricp.connections.active",
+    "hikaricp.connections.idle",
+    "jvm.memory.used",
+    "jvm.memory.max",
+    "http.server.requests",
+    "process.uptime",
+    "system.cpu.usage",
+    ...
+  ]
+}
+```
+
+Consultar una métrica específica:
+
+```bash
+# Conexiones activas del pool HikariCP
+curl http://localhost:8080/actuator/metrics/hikaricp.connections.active \
+  -H "Authorization: Bearer <token-admin>"
+```
+```json
+{
+  "name": "hikaricp.connections.active",
+  "measurements": [
+    { "statistic": "VALUE", "value": 1.0 }
+  ]
+}
+```
+
+#### Configuración aplicada
+
+```properties
+# application.properties
+management.endpoints.web.exposure.include=health,info,metrics
+management.endpoint.health.show-details=when-authorized
+management.endpoint.health.show-components=when-authorized
+management.info.env.enabled=true
+info.app.name=SpringReact Backend
+info.app.version=@project.version@
+```
+
+#### Uso en Docker Compose (health probe)
+
+El `Dockerfile` ya incluye `HEALTHCHECK` nativo y el servicio `app` en `docker-compose.yml` tiene `healthcheck` configurado. Ambos usan `wget` (disponible en `eclipse-temurin:21-jre-alpine`) para consultar el endpoint público `/actuator/health`:
+
+```dockerfile
+# Dockerfile — HEALTHCHECK nativo
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+  CMD wget -qO- http://localhost:8080/actuator/health || exit 1
+```
+
+```yaml
+# docker-compose.yml — healthcheck del servicio app
+healthcheck:
+  test: ["CMD-SHELL", "wget -qO- http://localhost:8080/actuator/health || exit 1"]
+  interval: 30s
+  timeout: 10s
+  retries: 3
+  start_period: 60s
+```
+
+> `start_period: 60s` da margen para que Spring Boot arranque antes de que Docker empiece a contar los fallos.
+
 ## ⚠️ Consideraciones para Producción
 
 ### Base de Datos
@@ -964,8 +1113,8 @@ useInactivityLogout(10);
 
 ### Monitoreo
 - [x] Implementar logging estructurado (formato Logstash JSON con MDC)
-- [ ] Configurar métricas (Actuator)
-- [ ] Health checks
+- [x] Configurar métricas (Actuator)
+- [x] Health checks
 - [ ] Alertas y notificaciones
 
 ### Testing

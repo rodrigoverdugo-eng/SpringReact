@@ -54,6 +54,12 @@ public class SecurityConfig {
                     // Rutas públicas de API (sin autenticación)
                     .requestMatchers("/api/auth/login", "/api/auth/refresh", "/api/auth/logout")
                     .permitAll()
+                    // Actuator health: público (para health probes de Docker/K8s)
+                    .requestMatchers("/actuator/health")
+                    .permitAll()
+                    // Resto de actuator: solo ADMIN
+                    .requestMatchers("/actuator/**")
+                    .hasRole("ADMIN")
                     // Gestión de usuarios: solo ADMIN
                     .requestMatchers("/api/users/**")
                     .hasRole("ADMIN")
