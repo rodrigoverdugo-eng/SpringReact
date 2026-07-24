@@ -54,6 +54,7 @@ Aplicación web empresarial completa con autenticación JWT, sistema de roles y 
 - **PostgreSQL** (única base de datos soportada)
 - **BCrypt** para encriptación de contraseñas
 - **Maven** para gestión de dependencias
+- **Flyway** para migraciones de base de datos
 - **Logging estructurado** (formato Logstash JSON, nativo Spring Boot 3.4)
 
 ### Frontend
@@ -98,7 +99,10 @@ SpringReact/
 │   │   │   │       ├── JwtAuthenticationFilter.java
 │   │   │   │       └── RateLimitFilter.java      # Filtro de rate limiting
 │   │   │   └── resources/
-│   │   │       └── application.properties
+│   │   │       ├── application.properties
+│   │   │       └── db/
+│   │   │           └── migration/
+│   │   │               └── V1__create_tables.sql  # Esquema inicial
 │   │   └── test/
 │   └── pom.xml
 │
@@ -662,9 +666,14 @@ spring.datasource.driverClassName=org.postgresql.Driver
 spring.datasource.username=${SPRING_DATASOURCE_USERNAME:userspringreact}
 spring.datasource.password=${SPRING_DATASOURCE_PASSWORD:userspringreact}
 
-# JPA/Hibernate
+# JPA/Hibernate — Flyway gestiona el esquema; Hibernate solo valida
 spring.jpa.database-platform=org.hibernate.dialect.PostgreSQLDialect
-spring.jpa.hibernate.ddl-auto=update
+spring.jpa.hibernate.ddl-auto=validate
+
+# Flyway
+spring.flyway.enabled=true
+spring.flyway.locations=classpath:db/migration
+spring.flyway.baseline-on-migrate=true
 
 # HikariCP - Pool de conexiones
 spring.datasource.hikari.pool-name=HikariPool-Postgres
@@ -1095,7 +1104,7 @@ healthcheck:
 ### Base de Datos
 - [x] Soporte para PostgreSQL
 - [x] Configurar pool de conexiones (HikariCP)
-- [ ] Implementar migrations (Flyway/Liquibase)
+- [x] Implementar migrations (Flyway)
 - [ ] Backups automatizados
 
 ### Seguridad
