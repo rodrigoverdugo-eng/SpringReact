@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AuthService from '../../services/AuthService';
+import { useTheme } from '../../context/ThemeContext';
 import { CheckCircle, AlertCircle, X, Building2, Eye, EyeOff } from 'lucide-react';
 import { APP_TITLE, APP_TAGLINE } from '../../config/menuConfig';
 import '../../styles/main.css';
@@ -15,6 +16,7 @@ function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [toasts, setToasts] = useState([]);
   const navigate = useNavigate();
+  const { setTheme } = useTheme();
 
   const showToast = (type, title, text) => {
     const id = Date.now();
@@ -36,7 +38,12 @@ function Login() {
 
     try {
       const response = await AuthService.login(formData.email, formData.password);
-      
+
+      // Apply the theme preference stored in the user's profile
+      if (response.themePreference) {
+        setTheme(response.themePreference === 'dark');
+      }
+
       if (response.requiresPasswordChange) {
         navigate('/change-password');
       } else {

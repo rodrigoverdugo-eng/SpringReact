@@ -225,6 +225,56 @@ class UserControllerTest {
   }
 
   @Test
+  void createUser_shouldReturn400WhenPasswordIsNull() {
+    User newUser = new User("New", "new@example.com", null, adminRole);
+    when(userRepository.findByEmail("new@example.com")).thenReturn(Optional.empty());
+
+    ResponseEntity<?> result = controller.createUser(newUser);
+
+    assertEquals(HttpStatus.BAD_REQUEST, result.getStatusCode());
+  }
+
+  @Test
+  void createUser_shouldReturn400WhenPasswordTooShort() {
+    User newUser = new User("New", "new@example.com", "Aa1!", adminRole);
+    when(userRepository.findByEmail("new@example.com")).thenReturn(Optional.empty());
+
+    ResponseEntity<?> result = controller.createUser(newUser);
+
+    assertEquals(HttpStatus.BAD_REQUEST, result.getStatusCode());
+  }
+
+  @Test
+  void createUser_shouldReturn400WhenPasswordMissingUppercase() {
+    User newUser = new User("New", "new@example.com", "noupperr1!", adminRole);
+    when(userRepository.findByEmail("new@example.com")).thenReturn(Optional.empty());
+
+    ResponseEntity<?> result = controller.createUser(newUser);
+
+    assertEquals(HttpStatus.BAD_REQUEST, result.getStatusCode());
+  }
+
+  @Test
+  void createUser_shouldReturn400WhenPasswordMissingLowercase() {
+    User newUser = new User("New", "new@example.com", "NOLOWER1!", adminRole);
+    when(userRepository.findByEmail("new@example.com")).thenReturn(Optional.empty());
+
+    ResponseEntity<?> result = controller.createUser(newUser);
+
+    assertEquals(HttpStatus.BAD_REQUEST, result.getStatusCode());
+  }
+
+  @Test
+  void createUser_shouldReturn400WhenPasswordMissingDigit() {
+    User newUser = new User("New", "new@example.com", "NoDigit!!", adminRole);
+    when(userRepository.findByEmail("new@example.com")).thenReturn(Optional.empty());
+
+    ResponseEntity<?> result = controller.createUser(newUser);
+
+    assertEquals(HttpStatus.BAD_REQUEST, result.getStatusCode());
+  }
+
+  @Test
   void updateUser_shouldReturn400WhenPasswordInvalid() {
     // Usar email diferente para que pase la validación de email y llegue a la de contraseña
     User updatedDetails = new User("Admin", "admin@example.com", "noSymbol1", adminRole);

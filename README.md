@@ -13,6 +13,7 @@ Aplicación web empresarial completa con autenticación JWT, sistema de roles y 
 - **Validación de Usuario Activo**: Campo "vigencia" para activar/desactivar usuarios
 - **Registro de Actividad**: Cada login registra fecha/hora e IP del cliente
 - **Último Acceso en Login**: La respuesta del login incluye la fecha del acceso anterior (`lastLoginAt`)
+- **Preferencia de Tema por Usuario**: La respuesta del login incluye `themePreference` y se aplica automáticamente al iniciar sesión
 - **Logging Estructurado**: Logs en formato JSON (Logstash) con campos MDC: evento, email, IP, rol
 
 ### 👥 Gestión de Usuarios
@@ -32,7 +33,7 @@ Aplicación web empresarial completa con autenticación JWT, sistema de roles y 
 - **Sidebar Colapsable**: Navegación responsive con toggle integrado en la cabecera
 - **Layout de Gestión**: Sidebar (logo+nav+pie usuario) + Topbar (breadcrumb + usuario/rol)
 - **Versión en Pie del Sidebar**: Número de versión del `pom.xml` mostrado en tiempo de ejecución
-- **Dashboard con Métricas**: Vista de inicio con tarjetas de estadísticas en tiempo real (total de usuarios, activos, inactivos, cambios de contraseña pendientes) para ADMIN; perfil visual con avatar para todos los roles
+- **Dashboard con Métricas**: Vista de inicio con tarjetas de estadísticas en tiempo real (total de usuarios, activos, inactivos, cambios de contraseña pendientes) para ADMIN
 - **Badges de Estado**: Visualización clara del estado del usuario
 - **Toast Notifications**: Notificaciones animadas de éxito/error con auto-dismiss (4s)
 - **Diálogo de Confirmación Personalizado**: Reemplaza `window.confirm()` con modal estilizado
@@ -41,7 +42,8 @@ Aplicación web empresarial completa con autenticación JWT, sistema de roles y 
 - **Accesibilidad de formularios**: Atributos `name` y `autocomplete` en los campos del login para compatibilidad con gestores de contraseñas y el autocompletado del navegador
 - **Generador de Contraseña Segura**: Genera contraseña aleatoria de 12 caracteres con botón de copiar al portapapeles
 - **Política de Contraseña con Checklist Visual**: Al escribir una nueva contraseña se muestra una lista en tiempo real de los requisitos cumplidos/pendientes (longitud, mayúscula, minúscula, número, símbolo)
-- **Modo Oscuro / Claro**: Toggle en el sidebar para cambiar entre temas; preferencia persistida en `localStorage` y aplicada instantáneamente sin parpadeo
+- **Página de Perfil Dedicada**: Vista "Mi Perfil" accesible desde el menú lateral con datos del usuario y selector de tema (claro/oscuro)
+- **Modo Oscuro / Claro**: Selector de tema en la página de perfil con persistencia por usuario vía `ProfileService`; sincronizado con el servidor y aplicado automáticamente al iniciar sesión según la preferencia almacenada en la base de datos
 - **Arquitectura Componetizada**: Organización por responsabilidades
 
 ## 🛠️ Stack Tecnológico
@@ -81,6 +83,7 @@ SpringReact/
 │   │   │   │   │   └── RateLimitConfig.java      # Configuración rate limiting
 │   │   │   │   ├── controller/
 │   │   │   │   │   ├── AuthController.java       # Login, cambio de password
+│   │   │   │   │   ├── ProfileController.java    # Perfil de usuario y preferencias
 │   │   │   │   │   ├── UserController.java       # CRUD usuarios
 │   │   │   │   │   ├── RoleController.java       # Gestión de roles
 │   │   │   │   │   ├── InfoController.java       # Versión de la aplicación
@@ -102,7 +105,8 @@ SpringReact/
 │   │   │       ├── application.properties
 │   │   │       └── db/
 │   │   │           └── migration/
-│   │   │               └── V1__create_tables.sql  # Esquema inicial
+│   │   │               ├── V1__create_tables.sql  # Esquema inicial
+│   │   │               └── V2__add_theme_preference_to_users.sql  # Preferencia de tema
 │   │   └── test/
 │   └── pom.xml
 │

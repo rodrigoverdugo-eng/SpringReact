@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ChevronRight, Users, UserCheck, UserX, KeyRound, Mail, Shield, Clock } from 'lucide-react';
+import { ChevronRight, Users, UserCheck, UserX, KeyRound } from 'lucide-react';
 import '../../styles/main.css';
 import './Dashboard.css';
 import Sidebar from '../layout/Sidebar';
 import UserManagement from '../features/UserManagement';
 import ChangePasswordPanel from '../features/ChangePasswordPanel';
+import Profile from '../features/Profile';
 import AuthService from '../../services/AuthService';
 import UserService from '../../services/UserService';
 import useInactivityLogout from '../../hooks/useInactivityLogout';
@@ -63,34 +64,6 @@ function HomeView({ currentUser }) {
           </div>
         </div>
       )}
-
-      <div className="card">
-        <h2 className="card-header">Mi Perfil</h2>
-        <div className="card-body">
-          <div className="profile-grid">
-            <div className="profile-avatar-large">
-              {currentUser?.name?.charAt(0).toUpperCase() || 'U'}
-            </div>
-            <div className="profile-details">
-              <h3 className="profile-name">{currentUser?.name}</h3>
-              <div className="profile-field">
-                <Mail size={15} />
-                <span>{currentUser?.email}</span>
-              </div>
-              <div className="profile-field">
-                <Shield size={15} />
-                <span>{currentUser?.role?.descripcion}</span>
-              </div>
-              {currentUser?.lastLoginAt && (
-                <div className="profile-field">
-                  <Clock size={15} />
-                  <span>Último acceso: {new Date(currentUser.lastLoginAt).toLocaleString(APP_LOCALE)}</span>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
     </div>
   );
 }
@@ -161,6 +134,8 @@ function Dashboard() {
           )}
 
           {currentView === 'change-password' && <ChangePasswordPanel />}
+
+          {currentView === 'profile' && <Profile currentUser={currentUser} />}
 
           {currentView === 'settings' && (
             <div className="card">

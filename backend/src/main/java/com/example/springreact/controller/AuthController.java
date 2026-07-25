@@ -120,6 +120,7 @@ public class AuthController {
     responseBody.put("requiresPasswordChange", user.getRequiresPasswordChange());
     responseBody.put("vigencia", user.getVigencia());
     responseBody.put("lastLoginAt", lastLoginAt);
+    responseBody.put("themePreference", user.getThemePreference());
     responseBody.put("message", "Login exitoso");
 
     // Enviar refreshToken como cookie httpOnly (no expuesto a JS)

@@ -33,6 +33,9 @@ public class User {
   @Column(nullable = false)
   private Boolean vigencia = true;
 
+  @Column(length = 5)
+  private String themePreference = "light";
+
   @ManyToOne(fetch = FetchType.EAGER)
   @JoinColumn(name = "role_id", nullable = false)
   private Role role;

@@ -14,7 +14,7 @@
     
     <groupId>com.example</groupId>
     <artifactId>springreact-backend</artifactId>
-    <version>1.0.2</version>
+    <version>1.0.3</version>
     <name>SpringReact Backend</name>
     <description>Backend API with Spring Boot</description>
     
@@ -146,7 +146,7 @@
                     <excludes>
                         <exclude>com/example/springreact/SpringReactApplication.class</exclude>
                         <exclude>com/example/springreact/model/**</exclude>
-                        <exclude>com/example/springreact/config/SecurityConfig.class</exclude>
+                        <exclude>com/example/springreact/security/SecurityConfig.class</exclude>
                         <exclude>com/example/springreact/config/RateLimitConfig.class</exclude>
                     </excludes>
                 </configuration>

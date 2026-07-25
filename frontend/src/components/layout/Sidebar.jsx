@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import AuthService from '../../services/AuthService';
 import InfoService from '../../services/InfoService';
-import { useTheme } from '../../context/ThemeContext';
-import { Menu, Building2, Sun, Moon, ChevronDown, LogOut } from 'lucide-react';
+import { Menu, Building2, ChevronDown, LogOut } from 'lucide-react';
 import { MENU_ITEMS, APP_TITLE } from '../../config/menuConfig';
 import '../../styles/main.css';
 import './Sidebar.css';
@@ -10,8 +9,6 @@ import './Sidebar.css';
 function Sidebar({ currentView, onViewChange, currentUser, isOpen, setIsOpen }) {
   const [expandedMenu, setExpandedMenu] = useState(null);
   const [appVersion, setAppVersion] = useState(null);
-  const { isDark, toggleTheme } = useTheme();
-
   useEffect(() => {
     InfoService.getVersion()
       .then(setAppVersion)
@@ -85,14 +82,7 @@ function Sidebar({ currentView, onViewChange, currentUser, isOpen, setIsOpen }) 
               <h2>{APP_TITLE}</h2>
             </div>
           )}
-          <button
-            className="theme-toggle-btn"
-            onClick={toggleTheme}
-            aria-label={isDark ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
-            title={isDark ? 'Modo claro' : 'Modo oscuro'}
-          >
-            {isDark ? <Sun size={20} /> : <Moon size={20} />}
-          </button>
+
         </div>
 
         <nav className="sidebar-nav">

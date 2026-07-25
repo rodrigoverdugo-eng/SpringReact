@@ -1,4 +1,4 @@
-import { Home, Users, KeyRound, Settings } from 'lucide-react';
+import { Home, Users, KeyRound, Settings, UserCircle } from 'lucide-react';
 
 // Título de la aplicación — fuente única: variable de entorno VITE_APP_TITLE (.env)
 export const APP_TITLE = import.meta.env.VITE_APP_TITLE ?? 'Sistema de Gestión';
@@ -25,6 +25,12 @@ export const MENU_ITEMS = [
     roles: [],
   },
   {
+    id: 'profile',
+    label: 'Mi Perfil',
+    icon: UserCircle,
+    roles: [],
+  },
+  {
     id: 'settings',
     label: 'Configuración',
     icon: Settings,
@@ -42,6 +48,7 @@ export const MENU_ITEMS = [
  */
 export const VIEW_LABELS = {
   home:     'Inicio',
+  profile:  'Mi Perfil',
   users:    'Configuración › Gestión de Usuarios',
   'change-password': 'Configuración › Cambiar Contraseña',
   settings: 'Configuración',

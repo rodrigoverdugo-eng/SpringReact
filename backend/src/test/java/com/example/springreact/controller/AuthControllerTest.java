@@ -380,6 +380,63 @@ class AuthControllerTest {
     assertEquals(HttpStatus.BAD_REQUEST, result.getStatusCode());
   }
 
+  @Test
+  void changePassword_shouldReturn400WhenPasswordTooShort() {
+    User user = new User("User", "user@example.com", "encoded", userRole);
+    when(securityContext.getAuthentication()).thenReturn(authentication);
+    when(authentication.getName()).thenReturn("user@example.com");
+    when(userRepository.findByEmail("user@example.com")).thenReturn(Optional.of(user));
+    when(passwordEncoder.matches("correct", "encoded")).thenReturn(true);
+
+    ResponseEntity<?> result =
+        controller.changePassword(Map.of("currentPassword", "correct", "newPassword", "Aa1!"));
+
+    assertEquals(HttpStatus.BAD_REQUEST, result.getStatusCode());
+  }
+
+  @Test
+  void changePassword_shouldReturn400WhenPasswordMissingUppercase() {
+    User user = new User("User", "user@example.com", "encoded", userRole);
+    when(securityContext.getAuthentication()).thenReturn(authentication);
+    when(authentication.getName()).thenReturn("user@example.com");
+    when(userRepository.findByEmail("user@example.com")).thenReturn(Optional.of(user));
+    when(passwordEncoder.matches("correct", "encoded")).thenReturn(true);
+
+    ResponseEntity<?> result =
+        controller.changePassword(
+            Map.of("currentPassword", "correct", "newPassword", "noupperr1!"));
+
+    assertEquals(HttpStatus.BAD_REQUEST, result.getStatusCode());
+  }
+
+  @Test
+  void changePassword_shouldReturn400WhenPasswordMissingLowercase() {
+    User user = new User("User", "user@example.com", "encoded", userRole);
+    when(securityContext.getAuthentication()).thenReturn(authentication);
+    when(authentication.getName()).thenReturn("user@example.com");
+    when(userRepository.findByEmail("user@example.com")).thenReturn(Optional.of(user));
+    when(passwordEncoder.matches("correct", "encoded")).thenReturn(true);
+
+    ResponseEntity<?> result =
+        controller.changePassword(Map.of("currentPassword", "correct", "newPassword", "NOLOWER1!"));
+
+    assertEquals(HttpStatus.BAD_REQUEST, result.getStatusCode());
+  }
+
+  @Test
+  void changePassword_shouldReturn400WhenPasswordMissingDigit() {
+    User user = new User("User", "user@example.com", "encoded", userRole);
+    when(securityContext.getAuthentication()).thenReturn(authentication);
+    when(authentication.getName()).thenReturn("user@example.com");
+    when(userRepository.findByEmail("user@example.com")).thenReturn(Optional.of(user));
+    when(passwordEncoder.matches("correct", "encoded")).thenReturn(true);
+
+    ResponseEntity<?> result =
+        controller.changePassword(Map.of("currentPassword", "correct", "newPassword", "NoDigit!!"));
+
+    assertEquals(HttpStatus.BAD_REQUEST, result.getStatusCode());
+  }
+
   // --- getClientIp ---
 
   @Test
