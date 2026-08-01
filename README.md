@@ -88,6 +88,12 @@ SpringReact/
 │   │   │   │   │   ├── RoleController.java       # Gestión de roles
 │   │   │   │   │   ├── InfoController.java       # Versión de la aplicación
 │   │   │   │   │   └── SpaController.java        # Soporte SPA (React Router)
+│   │   │   │   ├── service/
+│   │   │   │   │   ├── AuthService.java          # Lógica de autenticación
+│   │   │   │   │   ├── UserService.java          # Lógica CRUD de usuarios
+│   │   │   │   │   └── ProfileService.java       # Perfil y preferencias
+│   │   │   │   ├── util/
+│   │   │   │   │   └── PasswordValidator.java    # Validación de contraseñas
 │   │   │   │   ├── model/
 │   │   │   │   │   ├── User.java                 # Entidad Usuario
 │   │   │   │   │   ├── Role.java                 # Entidad Rol
@@ -312,12 +318,10 @@ Al iniciar la aplicación, se crean automáticamente:
 ### 📝 Ejemplos de Peticiones
 
 **Login:**
-```json
-POST /api/auth/login
-{
-  "email": "admin@example.com",
-  "password": "admin123"
-}
+```bash
+curl -X POST http://localhost:8080/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email": "admin@example.com", "password": "admin123"}'
 ```
 
 **Respuesta:**
@@ -340,19 +344,101 @@ POST /api/auth/login
 
 > El `refreshToken` **no aparece en el body**. Se envía como cookie `HttpOnly; Secure; SameSite=Strict` en el header `Set-Cookie`, inaccesible desde JavaScript.
 
-**Crear Usuario:**
-```json
-POST /api/users
-Authorization: Bearer {token}
-{
-  "name": "Juan Pérez",
-  "email": "juan@example.com",
-  "password": "password123",
-  "vigencia": true,
-  "role": {
-    "id": 2
-  }
-}
+**Refresh Token:**
+```bash
+curl -X POST http://localhost:8080/api/auth/refresh \
+  -H "Cookie: refreshToken=<refresh-token>"
+```
+> El navegador envía la cookie automáticamente; en curl se pasa explícitamente con `-H "Cookie: ..."`.
+
+**Logout:**
+```bash
+curl -X POST http://localhost:8080/api/auth/logout
+```
+
+**Cambiar Contraseña:**
+```bash
+curl -X POST http://localhost:8080/api/auth/change-password \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <access-token>" \
+  -d '{"currentPassword": "admin123", "newPassword": "NuevaPass1!"}'
+```
+
+**Crear Usuario (ADMIN):**
+```bash
+curl -X POST http://localhost:8080/api/users \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <access-token-admin>" \
+  -d '{"name": "Juan Pérez", "email": "juan@example.com", "password": "Pass1!word", "vigencia": true, "role": {"id": 2}}'
+```
+
+**Obtener Todos los Usuarios (ADMIN):**
+```bash
+curl -X GET http://localhost:8080/api/users \
+  -H "Authorization: Bearer <access-token-admin>"
+```
+
+**Obtener Usuario por ID (ADMIN):**
+```bash
+curl -X GET http://localhost:8080/api/users/1 \
+  -H "Authorization: Bearer <access-token-admin>"
+```
+
+**Actualizar Usuario (ADMIN):**
+```bash
+curl -X PUT http://localhost:8080/api/users/1 \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <access-token-admin>" \
+  -d '{"name": "Admin Actualizado", "email": "admin@example.com", "vigencia": true}'
+```
+
+**Eliminar Usuario (ADMIN):**
+```bash
+curl -X DELETE http://localhost:8080/api/users/2 \
+  -H "Authorization: Bearer <access-token-admin>"
+```
+
+**Historial de Login (ADMIN):**
+```bash
+curl -X GET http://localhost:8080/api/users/1/login-history \
+  -H "Authorization: Bearer <access-token-admin>"
+```
+
+**Último Acceso de Todos (ADMIN):**
+```bash
+curl -X GET http://localhost:8080/api/users/last-login \
+  -H "Authorization: Bearer <access-token-admin>"
+```
+
+**Obtener Perfil Propio:**
+```bash
+curl -X GET http://localhost:8080/api/profile \
+  -H "Authorization: Bearer <access-token>"
+```
+
+**Actualizar Tema:**
+```bash
+curl -X PUT http://localhost:8080/api/profile/theme \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <access-token>" \
+  -d '{"theme": "dark"}'
+```
+
+**Obtener Roles:**
+```bash
+curl -X GET http://localhost:8080/api/roles \
+  -H "Authorization: Bearer <access-token>"
+```
+
+**Versión de la Aplicación:**
+```bash
+curl -X GET http://localhost:8080/api/info/version \
+  -H "Authorization: Bearer <access-token>"
+```
+
+**Health Check:**
+```bash
+curl http://localhost:8080/actuator/health
 ```
 
 ## 🗄️ Base de Datos
@@ -541,7 +627,7 @@ En desarrollo local (`http://localhost`) la variable vale `false`; en producció
 6. **Autorización por Rol en backend**: `SecurityConfig` restringe `/api/users/**` a `ROLE_ADMIN`; `JwtAuthenticationFilter` inyecta el rol del JWT como `GrantedAuthority` de Spring Security
 7. **Sin IDOR en cambio de contraseña**: El endpoint `/api/auth/change-password` obtiene el email del JWT autenticado, nunca del body de la petición
 8. **Rate limit no falsificable**: `RateLimitFilter` usa `request.getRemoteAddr()` (resuelta por Tomcat con `server.forward-headers-strategy=native`) en lugar de leer `X-Forwarded-For` manualmente
-9. **Política de Contraseña**: Las contraseñas nuevas deben cumplir: mínimo 8 caracteres, al menos una mayúscula, una minúscula, un número y un símbolo. Validación aplicada en frontend (tiempo real con checklist) y en backend (`AuthController`, `UserController`)
+9. **Política de Contraseña**: Las contraseñas nuevas deben cumplir: mínimo 8 caracteres, al menos una mayúscula, una minúscula, un número y un símbolo. Validación aplicada en frontend (tiempo real con checklist) y en backend (`PasswordValidator` usado por `AuthService` y `UserService`)
 
 ### Seguridad de URLs
 
@@ -763,11 +849,11 @@ Los archivos optimizados estarán en `dist/`
 
 ### Backend
 
-Tests unitarios con **JUnit 5 + Mockito** (sin contexto Spring). Cubren:
+Tests unitarios con **JUnit 5 + Mockito** (sin contexto Spring). Los controllers delegan en una capa de servicios (`AuthService`, `UserService`, `ProfileService`) que contiene toda la lógica de negocio y está testeada por separado.
 
 | Clase | Archivo | Tests |
 |---|---|---|
-| `JwtService` | `security/JwtServiceTest.java` | 16 |
+| `JwtService` | `service/JwtServiceTest.java` | 16 |
 | `JwtAuthenticationFilter` | `security/JwtAuthenticationFilterTest.java` | 25 |
 | `RateLimitFilter` | `security/RateLimitFilterTest.java` | 5 |
 | `AuthController` | `controller/AuthControllerTest.java` | 21 |
@@ -776,7 +862,11 @@ Tests unitarios con **JUnit 5 + Mockito** (sin contexto Spring). Cubren:
 | `InfoController` | `controller/InfoControllerTest.java` | 1 |
 | `SpaController` | `controller/SpaControllerTest.java` | 1 |
 | `DataInitializer` | `config/DataInitializerTest.java` | 4 |
-| **Total** | | **94** |
+| `AuthService` | `service/AuthServiceTest.java` | 14 |
+| `UserService` | `service/UserServiceTest.java` | 17 |
+| `ProfileService` | `service/ProfileServiceTest.java` | 8 |
+| `ArchitectureTests` | `ArchitectureTests.java` | 9 |
+| **Total** | | **142** |
 
 ```bash
 cd backend
@@ -812,6 +902,33 @@ Cobertura actual (clases excluidas: `SpringReactApplication`, modelos, `Security
 |---------|-----------|
 | Instrucciones | 85% |
 | Ramas | 86% |
+
+### Validación de Arquitectura con ArchUnit
+
+Se utiliza **ArchUnit** para validar automáticamente la arquitectura del proyecto y prevenir desvíos de diseño:
+
+| Regla | Descripción | Estado |
+|-------|-------------|--------|
+| **JwtService Location** | `JwtService` debe estar en paquete `service`, no en `security` | ✅ |
+| **@Service Annotation** | Clases con `@Service` solo en paquete `.service` | ✅ |
+| **@Repository Annotation** | Clases con `@Repository` solo en paquete `.repository` | ✅ |
+| **@Controller Annotation** | Clases con `@Controller/@RestController` solo en `.controller` | ✅ |
+| **Controller Naming** | Clases en `.controller` terminan en "Controller" | ✅ |
+| **Service Naming** | Clases en `.service` terminan en "Service" | ✅ |
+| **Repository Naming** | Clases en `.repository` terminan en "Repository" | ✅ |
+| **Layered Architecture** | Controllers → Services → Repositories (excepto casos documentados) | ✅ |
+
+**Excepciones Documentadas:**
+- `RoleController` accede directamente a `RoleRepository` (endpoint simple sin lógica compleja)
+- `JwtAuthenticationFilter` accede a `UserRepository` (necesario para filtro de autenticación)
+
+Ejecutar validación:
+```bash
+cd backend
+mvn test -Dtest=ArchitectureTests
+```
+
+> Los tests de ArchUnit fallan automáticamente si se viola alguna regla, evitando que cambios futuros desvíen la arquitectura del proyecto.
 
 ### Frontend
 
@@ -953,8 +1070,13 @@ useInactivityLogout(10);
 - `PrivateRoute.jsx`: HOC para proteger rutas
 
 **Backend:**
-- `AuthController.java`: Endpoints de autenticación (registra IP y fecha en cada login)
-- `UserController.java`: CRUD de usuarios con validaciones y endpoints de historial de actividad
+- `AuthService.java`: Lógica de autenticación (login, refresh, logout, cambio de contraseña)
+- `UserService.java`: Lógica CRUD de usuarios, historial de actividad, último acceso
+- `ProfileService.java`: Perfil de usuario y actualización de preferencia de tema
+- `PasswordValidator.java`: Utilidad compartida de validación de política de contraseña
+- `AuthController.java`: Endpoints de autenticación (delega en `AuthService`)
+- `UserController.java`: CRUD de usuarios con validaciones (delega en `UserService`)
+- `ProfileController.java`: Perfil y tema del usuario (delega en `ProfileService`)
 - `UserLoginHistory.java`: Entidad y repositorio para el historial de logins
 - `RoleController.java`: Endpoints de roles
 - `InfoController.java`: Expone la versión del `pom.xml` vía `/api/info/version`
@@ -1131,7 +1253,7 @@ healthcheck:
 - [ ] Alertas y notificaciones
 
 ### Testing
-- [x] Tests unitarios backend (JUnit 5 + Mockito, 94 tests)
+- [x] Tests unitarios backend (JUnit 5 + Mockito, 133 tests)
 - [x] Tests unitarios frontend (Vitest, 36 tests)
 - [ ] Tests de integración
 - [ ] Tests E2E (Cypress/Playwright)

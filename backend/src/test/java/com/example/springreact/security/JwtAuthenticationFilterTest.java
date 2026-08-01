@@ -6,6 +6,7 @@ import static org.mockito.Mockito.*;
 import com.example.springreact.model.Role;
 import com.example.springreact.model.User;
 import com.example.springreact.repository.UserRepository;
+import com.example.springreact.service.JwtService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;

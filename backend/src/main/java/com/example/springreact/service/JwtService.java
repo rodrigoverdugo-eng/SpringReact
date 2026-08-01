@@ -1,4 +1,4 @@
-package com.example.springreact.security;
+package com.example.springreact.service;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;

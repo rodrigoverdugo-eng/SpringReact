@@ -1,4 +1,4 @@
-package com.example.springreact.security;
+package com.example.springreact.service;
 
 import static org.junit.jupiter.api.Assertions.*;
 

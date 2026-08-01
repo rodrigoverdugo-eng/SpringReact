@@ -1,14 +1,13 @@
 package com.example.springreact.controller;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 import com.example.springreact.model.Role;
 import com.example.springreact.model.User;
-import com.example.springreact.repository.UserRepository;
+import com.example.springreact.service.ProfileService;
+import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -19,12 +18,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.server.ResponseStatusException;
 
 @ExtendWith(MockitoExtension.class)
 @SuppressWarnings({"null", "unchecked"})
 class ProfileControllerTest {
 
-  @Mock private UserRepository userRepository;
+  @Mock private ProfileService profileService;
   @Mock private Authentication authentication;
   @Mock private SecurityContext securityContext;
 
@@ -33,7 +33,7 @@ class ProfileControllerTest {
 
   @BeforeEach
   void setUp() {
-    controller = new ProfileController(userRepository);
+    controller = new ProfileController(profileService);
     Role role = new Role(1L, "ADMIN", "Administrator");
     testUser = new User("Test User", "test@example.com", "encoded", role);
     testUser.setId(1L);
@@ -43,11 +43,15 @@ class ProfileControllerTest {
     when(authentication.getName()).thenReturn("test@example.com");
   }
 
-  // --- GET PROFILE ---
-
   @Test
   void getProfile_shouldReturn200WithProfileDataWhenUserFound() {
-    when(userRepository.findByEmail("test@example.com")).thenReturn(Optional.of(testUser));
+    Map<String, Object> profile = new HashMap<>();
+    profile.put("id", 1L);
+    profile.put("name", "Test User");
+    profile.put("email", "test@example.com");
+    profile.put("themePreference", "light");
+
+    when(profileService.getProfile("test@example.com")).thenReturn(profile);
 
     ResponseEntity<?> result = controller.getProfile();
 
@@ -61,20 +65,16 @@ class ProfileControllerTest {
   }
 
   @Test
-  void getProfile_shouldReturn404WhenUserNotFound() {
-    when(userRepository.findByEmail("test@example.com")).thenReturn(Optional.empty());
+  void getProfile_shouldPropagate404WhenUserNotFound() {
+    when(profileService.getProfile("test@example.com"))
+        .thenThrow(new ResponseStatusException(HttpStatus.NOT_FOUND));
 
-    ResponseEntity<?> result = controller.getProfile();
-
-    assertEquals(HttpStatus.NOT_FOUND, result.getStatusCode());
+    assertThrows(ResponseStatusException.class, () -> controller.getProfile());
   }
-
-  // --- UPDATE THEME ---
 
   @Test
   void updateTheme_shouldReturn200WhenThemeIsDark() {
-    when(userRepository.findByEmail("test@example.com")).thenReturn(Optional.of(testUser));
-    when(userRepository.save(any(User.class))).thenAnswer(inv -> inv.getArgument(0));
+    when(profileService.updateTheme("test@example.com", "dark")).thenReturn("dark");
 
     ResponseEntity<?> result = controller.updateTheme(Map.of("theme", "dark"));
 
@@ -83,14 +83,11 @@ class ProfileControllerTest {
     assertNotNull(body);
     assertEquals("dark", body.get("themePreference"));
     assertEquals("Preferencia actualizada", body.get("message"));
-    verify(userRepository).save(testUser);
   }
 
   @Test
   void updateTheme_shouldReturn200WhenThemeIsLight() {
-    testUser.setThemePreference("dark");
-    when(userRepository.findByEmail("test@example.com")).thenReturn(Optional.of(testUser));
-    when(userRepository.save(any(User.class))).thenAnswer(inv -> inv.getArgument(0));
+    when(profileService.updateTheme("test@example.com", "light")).thenReturn("light");
 
     ResponseEntity<?> result = controller.updateTheme(Map.of("theme", "light"));
 
@@ -100,22 +97,22 @@ class ProfileControllerTest {
   }
 
   @Test
-  void updateTheme_shouldReturn400WhenThemeIsInvalid() {
-    ResponseEntity<?> result = controller.updateTheme(Map.of("theme", "blue"));
+  void updateTheme_shouldPropagate400WhenThemeIsInvalid() {
+    when(profileService.updateTheme("test@example.com", "blue"))
+        .thenThrow(
+            new ResponseStatusException(
+                HttpStatus.BAD_REQUEST, "Tema inválido. Use 'light' o 'dark'"));
 
-    assertEquals(HttpStatus.BAD_REQUEST, result.getStatusCode());
-    Map<String, Object> body = (Map<String, Object>) result.getBody();
-    assertNotNull(body);
-    assertTrue(body.get("message").toString().contains("Tema inválido"));
-    verifyNoInteractions(userRepository);
+    assertThrows(
+        ResponseStatusException.class, () -> controller.updateTheme(Map.of("theme", "blue")));
   }
 
   @Test
-  void updateTheme_shouldReturn404WhenUserNotFound() {
-    when(userRepository.findByEmail("test@example.com")).thenReturn(Optional.empty());
+  void updateTheme_shouldPropagate404WhenUserNotFound() {
+    when(profileService.updateTheme("test@example.com", "dark"))
+        .thenThrow(new ResponseStatusException(HttpStatus.NOT_FOUND));
 
-    ResponseEntity<?> result = controller.updateTheme(Map.of("theme", "dark"));
-
-    assertEquals(HttpStatus.NOT_FOUND, result.getStatusCode());
+    assertThrows(
+        ResponseStatusException.class, () -> controller.updateTheme(Map.of("theme", "dark")));
   }
 }
