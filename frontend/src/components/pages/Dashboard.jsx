@@ -10,6 +10,7 @@ import Profile from '../features/Profile';
 import AuthService from '../../services/AuthService';
 import UserService from '../../services/UserService';
 import useInactivityLogout from '../../hooks/useInactivityLogout';
+import { INACTIVITY_TIMEOUT_MINUTES } from '../../config/sessionTimeout';
 import { VIEW_LABELS, APP_LOCALE } from '../../config/menuConfig';
 
 function HomeView({ currentUser }) {
@@ -74,7 +75,7 @@ function Dashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const navigate = useNavigate();
 
-  useInactivityLogout(10);
+  useInactivityLogout(INACTIVITY_TIMEOUT_MINUTES);
 
   useEffect(() => {
     const user = AuthService.getCurrentUser();

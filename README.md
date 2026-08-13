@@ -8,7 +8,7 @@ Aplicación web empresarial completa con autenticación JWT, sistema de roles y 
 - **JWT Authentication**: Tokens de acceso y refresh
 - **Sistema de Roles**: ADMIN y USER con permisos diferenciados
 - **Cambio de Contraseña Obligatorio**: En el primer inicio de sesión
-- **Logout Automático**: Por inactividad (10 minutos)
+- **Logout Automático**: Por inactividad (10 minutos, válido en web y móvil)
 - **Rutas Protegidas**: Componentes protegidos con PrivateRoute
 - **Validación de Usuario Activo**: Campo "vigencia" para activar/desactivar usuarios
 - **Registro de Actividad**: Cada login registra fecha/hora e IP del cliente
@@ -622,7 +622,7 @@ En desarrollo local (`http://localhost`) la variable vale `false`; en producció
 1. **Validación de Usuario Activo**: Solo usuarios con `vigencia=true` pueden iniciar sesión
 2. **Cambio de Contraseña Obligatorio**: Usuarios marcados con `requiresPasswordChange=true` deben cambiar su contraseña
 3. **Email Único**: Validación en backend y frontend
-4. **Logout por Inactividad**: Sesión expira después de 10 minutos sin actividad
+4. **Logout por Inactividad**: Sesión expira después de 10 minutos sin actividad y la última actividad se persiste para que el cierre también funcione si el navegador móvil suspende JavaScript
 5. **Rutas Protegidas**: Componente `PrivateRoute` valida autenticación
 6. **Autorización por Rol en backend**: `SecurityConfig` restringe `/api/users/**` a `ROLE_ADMIN`; `JwtAuthenticationFilter` inyecta el rol del JWT como `GrantedAuthority` de Spring Security
 7. **Sin IDOR en cambio de contraseña**: El endpoint `/api/auth/change-password` obtiene el email del JWT autenticado, nunca del body de la petición
@@ -937,8 +937,8 @@ Tests unitarios con **Vitest + @testing-library/react**. Cubren:
 | Módulo | Archivo | Tests |
 |--------|---------|-------|
 | `utils/passwordValidation.js` | `test/passwordValidation.test.js` | 10 |
-| `services/AuthService.js` | `test/AuthService.test.js` | 26 |
-| **Total** | | **36** |
+| `services/AuthService.js` | `test/AuthService.test.js` | 29 |
+| **Total** | | **39** |
 
 ```bash
 cd frontend
@@ -982,7 +982,7 @@ Cobertura actual de los módulos incluidos:
 6. Cada petición incluye el Access Token en header `Authorization: Bearer {token}`
 7. Al expirar el Access Token, el interceptor de Axios llama a `/api/auth/refresh`; el browser envía la cookie automáticamente
 8. Backend valida la cookie y devuelve un nuevo Access Token en el body
-9. Al recargar la página, `PrivateRoute` detecta que no hay token en memoria y llama a `/refresh` para restaurar la sesión
+9. Al recargar la página, `PrivateRoute` primero verifica si la sesión venció por inactividad; si aún es válida, entonces llama a `/refresh` para restaurar la sesión
 10. Logout llama a `/api/auth/logout` → backend limpia la cookie (`Max-Age=0`) → frontend borra datos de `localStorage`
 
 ### Logging Estructurado
@@ -1026,14 +1026,16 @@ logging.structured.format.console=logstash
 
 ### Configuración del Tiempo de Inactividad
 
-El logout automático por inactividad está controlado en **dos archivos que deben mantenerse sincronizados**:
+El logout automático por inactividad está controlado en **un valor compartido y un marcador persistente**:
 
 | Archivo | Variable | Valor actual |
 |---------|----------|--------------|
 | `backend/.../security/JwtService.java` | `ACCESS_TOKEN_VALIDITY` | 10 minutos |
-| `frontend/src/components/pages/Dashboard.jsx` | `useInactivityLogout(10)` | 10 minutos |
+| `frontend/src/config/sessionTimeout.js` | `INACTIVITY_TIMEOUT_MINUTES` | 10 minutos |
+| `frontend/src/components/pages/Dashboard.jsx` | `useInactivityLogout(INACTIVITY_TIMEOUT_MINUTES)` | 10 minutos |
+| `frontend/src/services/AuthService.js` | `lastActivityAt` en `localStorage` | última actividad |
 
-Ambos valores deben ser iguales. Si el token dura más que el timer de inactividad (o viceversa), se produce una inconsistencia de seguridad.
+Estos valores deben mantenerse alineados. Si el token dura más que el timer de inactividad (o viceversa), se produce una inconsistencia de seguridad; además, `PrivateRoute` bloquea la restauración por `refreshToken` cuando la inactividad ya venció.
 
 Para cambiar el tiempo (ejemplo: 10 minutos), modificar **ambos archivos**:
 
@@ -1043,8 +1045,9 @@ private final long ACCESS_TOKEN_VALIDITY = 10 * 60 * 1000; // 10 min
 ```
 
 ```js
-// Dashboard.jsx — debe coincidir con JwtService.java
-useInactivityLogout(10);
+// sessionTimeout.js / Dashboard.jsx — debe coincidir con JwtService.java
+export const INACTIVITY_TIMEOUT_MINUTES = 10;
+useInactivityLogout(INACTIVITY_TIMEOUT_MINUTES);
 ```
 
 ### Flujo de Cambio de Contraseña
@@ -1059,7 +1062,7 @@ useInactivityLogout(10);
 ### Componentes Principales
 
 **Frontend:**
-- `Dashboard.jsx`: Contenedor principal con gestión de vistas y topbar (breadcrumb + usuario)
+- `Dashboard.jsx`: Contenedor principal con gestión de vistas y topbar (breadcrumb + usuario); activa el logout por inactividad con la constante compartida
 - `Sidebar.jsx`: Navegación lateral con toggle integrado, filtrado por roles, usuario y versión en el pie; incluye botón de cambio de tema (sol/luna). Lee la configuración del menú desde `menuConfig.js`
 - `menuConfig.js`: Fuente única de verdad para ítems de menú (`MENU_ITEMS`), título de la aplicación (`APP_TITLE`), tagline del login (`APP_TAGLINE`) y etiquetas de breadcrumb (`VIEW_LABELS`). Permisos definidos con `roles: []` (array); `[]` indica acceso universal
 - `ThemeContext.jsx`: Contexto React para el tema oscuro/claro; provee `isDark` y `toggleTheme`
@@ -1067,7 +1070,7 @@ useInactivityLogout(10);
 - `ChangePasswordPanel.jsx`: Panel de cambio de contraseña integrado en el dashboard (contraseña actual + nueva + confirmar), con checklist de política en tiempo real
 - `Login.jsx`: Formulario de autenticación
 - `ChangePassword.jsx`: Formulario de cambio de contraseña obligatorio (primer login), con checklist de política en tiempo real
-- `PrivateRoute.jsx`: HOC para proteger rutas
+- `PrivateRoute.jsx`: HOC para proteger rutas y evitar restaurar la sesión por refresh cuando la inactividad ya venció
 
 **Backend:**
 - `AuthService.java`: Lógica de autenticación (login, refresh, logout, cambio de contraseña)
@@ -1254,7 +1257,7 @@ healthcheck:
 
 ### Testing
 - [x] Tests unitarios backend (JUnit 5 + Mockito, 133 tests)
-- [x] Tests unitarios frontend (Vitest, 36 tests)
+- [x] Tests unitarios frontend (Vitest, 39 tests)
 - [ ] Tests de integración
 - [ ] Tests E2E (Cypress/Playwright)
 - [x] Cobertura de código mínima 80%

@@ -2,6 +2,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import axios from 'axios'
 import authService from '../services/AuthService'
+import { INACTIVITY_STORAGE_KEY } from '../config/sessionTimeout'
 
 // Mock de axios (Vitest lo hoista automáticamente)
 vi.mock('axios', () => {
@@ -102,6 +103,7 @@ describe('AuthService', () => {
       const stored = JSON.parse(localStorage.getItem('user'))
       expect(stored).not.toHaveProperty('accessToken')
       expect(stored.email).toBe('admin@example.com')
+      expect(localStorage.getItem(INACTIVITY_STORAGE_KEY)).not.toBeNull()
     })
 
     it('propaga el error si la API falla', async () => {
@@ -113,24 +115,51 @@ describe('AuthService', () => {
   describe('logout', () => {
     it('limpia localStorage al hacer logout', async () => {
       localStorage.setItem('user', JSON.stringify({ name: 'Admin' }))
+      localStorage.setItem(INACTIVITY_STORAGE_KEY, String(Date.now()))
       axios.post.mockResolvedValueOnce({})
 
       await authService.logout()
 
       expect(localStorage.getItem('user')).toBeNull()
+      expect(localStorage.getItem(INACTIVITY_STORAGE_KEY)).toBeNull()
     })
 
     it('limpia localStorage aunque la petición de logout falle', async () => {
       localStorage.setItem('user', JSON.stringify({ name: 'Admin' }))
+      localStorage.setItem(INACTIVITY_STORAGE_KEY, String(Date.now()))
       axios.post.mockRejectedValueOnce(new Error('Network Error'))
 
       await authService.logout()
 
       expect(localStorage.getItem('user')).toBeNull()
+      expect(localStorage.getItem(INACTIVITY_STORAGE_KEY)).toBeNull()
+    })
+  })
+
+  describe('inactivity helpers', () => {
+    it('detecta cuando la inactividad expiró', () => {
+      localStorage.setItem(INACTIVITY_STORAGE_KEY, String(Date.now() - 11 * 60 * 1000))
+
+      expect(authService.hasInactivityExpired(10)).toBe(true)
+    })
+
+    it('detecta cuando la inactividad aún no expiró', () => {
+      localStorage.setItem(INACTIVITY_STORAGE_KEY, String(Date.now() - 5 * 60 * 1000))
+
+      expect(authService.hasInactivityExpired(10)).toBe(false)
     })
   })
 
   describe('refreshAccessToken', () => {
+    it('no renueva el token si la sesión expiró por inactividad', async () => {
+      localStorage.setItem(INACTIVITY_STORAGE_KEY, String(Date.now() - 11 * 60 * 1000))
+
+      const result = await authService.refreshAccessToken()
+
+      expect(result).toBeNull()
+      expect(axios.post).not.toHaveBeenCalledWith('/api/auth/refresh', {})
+    })
+
     it('renueva el token correctamente y lo guarda en memoria', async () => {
       const futureExp = Math.floor(Date.now() / 1000) + 3600
       const payload = btoa(JSON.stringify({ exp: futureExp }))

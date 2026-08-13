@@ -1,10 +1,10 @@
 import { useEffect, useRef } from 'react';
 import AuthService from '../services/AuthService';
+import { INACTIVITY_TIMEOUT_MINUTES } from '../config/sessionTimeout';
 
 // Hook personalizado para detectar inactividad
-const useInactivityLogout = (timeoutMinutes = 15) => {
+const useInactivityLogout = (timeoutMinutes = INACTIVITY_TIMEOUT_MINUTES) => {
   const timeoutRef = useRef(null);
-  const lastActivityRef = useRef(Date.now());
   const INACTIVITY_TIME = timeoutMinutes * 60 * 1000; // Convertir a milisegundos
 
   const scheduleLogout = (delay) => {
@@ -17,8 +17,21 @@ const useInactivityLogout = (timeoutMinutes = 15) => {
   };
 
   const resetTimer = () => {
-    lastActivityRef.current = Date.now();
+    AuthService.recordActivity();
     scheduleLogout(INACTIVITY_TIME);
+  };
+
+  const syncTimerWithStoredActivity = () => {
+    if (AuthService.hasInactivityExpired(timeoutMinutes)) {
+      AuthService.logout();
+      return;
+    }
+
+    const lastActivity = AuthService.getLastActivityTimestamp() ?? Date.now();
+    const elapsed = Date.now() - lastActivity;
+    const remaining = Math.max(INACTIVITY_TIME - elapsed, 0);
+
+    scheduleLogout(remaining);
   };
 
   useEffect(() => {
@@ -28,7 +41,7 @@ const useInactivityLogout = (timeoutMinutes = 15) => {
     }
 
     // Eventos que indican actividad del usuario
-    const events = ['mousedown', 'keydown', 'scroll', 'touchstart', 'click'];
+    const events = ['pointerdown', 'keydown', 'scroll', 'touchstart', 'click', 'focus'];
 
     // Iniciar timer
     resetTimer();
@@ -41,23 +54,27 @@ const useInactivityLogout = (timeoutMinutes = 15) => {
     // Manejar visibilidad de la página (bloqueo de pantalla / cambio de app en móvil)
     const handleVisibilityChange = () => {
       if (document.hidden) {
-        // Página oculta: pausar el timer para no cerrar sesión mientras el teléfono está bloqueado
         if (timeoutRef.current) {
           clearTimeout(timeoutRef.current);
         }
       } else {
-        // Página visible de nuevo: verificar si el tiempo inactivo superó el límite
-        const elapsed = Date.now() - lastActivityRef.current;
-        if (elapsed >= INACTIVITY_TIME) {
-          AuthService.logout();
-        } else {
-          // Reanudar el timer con el tiempo restante
-          scheduleLogout(INACTIVITY_TIME - elapsed);
-        }
+        syncTimerWithStoredActivity();
+      }
+    };
+
+    const handlePageShow = () => {
+      syncTimerWithStoredActivity();
+    };
+
+    const handlePageHide = () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
       }
     };
 
     document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('pageshow', handlePageShow);
+    window.addEventListener('pagehide', handlePageHide);
 
     // Cleanup
     return () => {
@@ -68,6 +85,8 @@ const useInactivityLogout = (timeoutMinutes = 15) => {
         document.removeEventListener(event, resetTimer);
       });
       document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('pageshow', handlePageShow);
+      window.removeEventListener('pagehide', handlePageHide);
     };
   }, [INACTIVITY_TIME]);
 };

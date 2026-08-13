@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { INACTIVITY_STORAGE_KEY, INACTIVITY_TIMEOUT_MINUTES } from '../config/sessionTimeout';
 
 const API_URL = '/api/auth';
 
@@ -6,6 +7,25 @@ const API_URL = '/api/auth';
 let _accessToken = null;
 
 class AuthService {
+  recordActivity() {
+    localStorage.setItem(INACTIVITY_STORAGE_KEY, String(Date.now()));
+  }
+
+  getLastActivityTimestamp() {
+    const rawValue = localStorage.getItem(INACTIVITY_STORAGE_KEY);
+    if (!rawValue) return null;
+
+    const timestamp = Number(rawValue);
+    return Number.isFinite(timestamp) ? timestamp : null;
+  }
+
+  hasInactivityExpired(timeoutMinutes = INACTIVITY_TIMEOUT_MINUTES) {
+    const lastActivity = this.getLastActivityTimestamp();
+    if (lastActivity === null) return false;
+
+    return Date.now() - lastActivity >= timeoutMinutes * 60 * 1000;
+  }
+
   async login(email, password) {
     const response = await axios.post(`${API_URL}/login`, { email, password });
     const { accessToken, ...userData } = response.data;
@@ -13,11 +33,17 @@ class AuthService {
     // accessToken solo en memoria; refreshToken llega como cookie httpOnly (invisible a JS)
     _accessToken = accessToken;
     localStorage.setItem('user', JSON.stringify(userData));
+    this.recordActivity();
 
     return response.data;
   }
 
   async refreshAccessToken() {
+    if (this.hasInactivityExpired()) {
+      await this.logout();
+      return null;
+    }
+
     try {
       // Sin body: el browser envía la cookie httpOnly automáticamente
       const response = await axios.post(`${API_URL}/refresh`, {});
@@ -40,6 +66,7 @@ class AuthService {
     }
     _accessToken = null;
     localStorage.removeItem('user');
+    localStorage.removeItem(INACTIVITY_STORAGE_KEY);
     window.location.href = '/login';
   }
 
