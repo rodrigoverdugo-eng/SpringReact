@@ -51,11 +51,19 @@ function Sidebar({ currentView, onViewChange, currentUser, isOpen, setIsOpen }) 
       }
     } else {
       onViewChange(item.id);
+      if (window.innerWidth <= 768) {
+        setIsOpen(false);
+      }
     }
   };
 
+  const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768;
+
   return (
     <>
+      {isOpen && isMobile && (
+        <button className="sidebar-backdrop" aria-label="Cerrar menú" onClick={() => setIsOpen(false)} />
+      )}
       {/* Botón flotante solo visible en móvil */}
       <button
         className="sidebar-toggle-mobile"
@@ -113,7 +121,12 @@ function Sidebar({ currentView, onViewChange, currentUser, isOpen, setIsOpen }) 
                   <button
                     key={subItem.id}
                     className={`submenu-item ${currentView === subItem.id ? 'active' : ''}`}
-                    onClick={() => onViewChange(subItem.id)}
+                    onClick={() => {
+                      onViewChange(subItem.id);
+                      if (window.innerWidth <= 768) {
+                        setIsOpen(false);
+                      }
+                    }}
                   >
                     <SubIcon size={18} />
                     <span>{subItem.label}</span>

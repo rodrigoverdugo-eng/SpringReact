@@ -204,7 +204,38 @@
 
 @media (max-width: 768px) {
   .dashboard-header {
-    padding: 20px;
+    height: auto;
+    min-height: 72px;
+    padding: 16px 20px;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .header-breadcrumb {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .dashboard-header h1 {
+    font-size: 1.05em;
+  }
+
+  .header-user {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .topbar-user-info {
+    align-items: flex-start;
+    min-width: 0;
+    max-width: calc(100vw - 120px);
+  }
+
+  .topbar-last-login {
+    white-space: normal;
+    word-break: break-word;
+    line-height: 1.4;
   }
 
   .form-card,
@@ -221,6 +252,81 @@
   .user-actions {
     width: 100%;
     justify-content: flex-end;
+  }
+}
+
+@media (max-width: 480px) {
+  .dashboard-header {
+    padding: 14px 16px;
+  }
+
+  .header-breadcrumb {
+    gap: 6px;
+  }
+
+  .dashboard-header h1 {
+    font-size: 0.98em;
+  }
+
+  .header-user {
+    gap: 8px;
+  }
+
+  .topbar-avatar {
+    width: 32px;
+    height: 32px;
+    font-size: 0.8em;
+  }
+
+  .topbar-name {
+    font-size: 0.8em;
+  }
+
+  .topbar-role,
+  .topbar-last-login {
+    font-size: 0.7em;
+  }
+}
+
+@media (max-width: 360px) {
+  .dashboard-header {
+    padding: 12px 14px;
+    gap: 10px;
+  }
+
+  .dashboard-header h1 {
+    font-size: 0.94em;
+  }
+
+  .topbar-user-info {
+    max-width: calc(100vw - 108px);
+  }
+
+  .stats-grid {
+    gap: 12px;
+  }
+
+  .stat-card {
+    padding: 16px 18px;
+  }
+
+  .stat-card__icon {
+    width: 42px;
+    height: 42px;
+  }
+
+  .stat-card__value {
+    font-size: 1.5em;
+  }
+
+  .stat-card__label {
+    font-size: 0.78em;
+  }
+
+  .profile-avatar-large {
+    width: 56px;
+    height: 56px;
+    font-size: 1.4em;
   }
 }
 
@@ -369,14 +475,26 @@
   flex-shrink: 0;
 }
 
-@media (max-width: 480px) {
+@media (max-width: 520px) {
   .stats-grid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: 1fr;
   }
+}
 
+@media (max-width: 480px) {
   .profile-grid {
     flex-direction: column;
-    align-items: flex-start;
+    align-items: center;
+    text-align: center;
+  }
+
+  .profile-details {
+    width: 100%;
+  }
+
+  .profile-field {
+    justify-content: center;
+    flex-wrap: wrap;
   }
 }
 

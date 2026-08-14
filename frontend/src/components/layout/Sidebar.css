@@ -16,6 +16,16 @@
   color: var(--color-text-primary);
 }
 
+.sidebar-backdrop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.45);
+  border: none;
+  padding: 0;
+  z-index: 999;
+}
+
 /* Botón toggle integrado dentro del sidebar (desktop) */
 .sidebar-toggle-btn {
   background: transparent;
@@ -335,26 +345,110 @@
 
 /* Responsive */
 @media (max-width: 768px) {
-  /* Mostrar botón flotante en móvil */
-  .sidebar-toggle-mobile {
-    display: flex;
+  .sidebar-backdrop {
+    display: block;
   }
 
-  /* Ocultar toggle integrado en móvil (sidebar no es visible cuando cerrado) */
+  .sidebar-toggle-mobile {
+    display: flex;
+    top: 12px;
+    left: 12px;
+    padding: 9px;
+  }
+
   .sidebar-toggle-btn {
     display: none;
   }
 
   .sidebar {
     transform: translateX(-100%);
+    width: 260px;
+    max-width: 82vw;
   }
 
   .sidebar.open {
     transform: translateX(0);
-    width: 280px;
+    width: 260px;
+    max-width: 82vw;
   }
 
   .sidebar.closed {
     transform: translateX(-100%);
+  }
+
+  .sidebar-header {
+    min-height: 56px;
+    padding: 12px 14px;
+  }
+
+  .sidebar-nav {
+    padding-top: 8px;
+  }
+
+  .nav-item {
+    padding: 12px 16px;
+    font-size: 0.92em;
+  }
+
+  .submenu-item {
+    padding: 10px 16px 10px 36px;
+    font-size: 0.88em;
+  }
+
+  .sidebar-user {
+    padding: 10px 12px;
+  }
+
+  .user-avatar,
+  .user-avatar-small {
+    width: 42px;
+    height: 42px;
+    font-size: 1em;
+  }
+
+  .user-name {
+    font-size: 0.9em;
+  }
+
+  .user-email {
+    font-size: 0.74em;
+  }
+
+  .btn-logout-sidebar {
+    padding: 11px 14px;
+    font-size: 0.88em;
+  }
+}
+
+@media (max-width: 360px) {
+  .sidebar {
+    width: 84vw;
+    max-width: 84vw;
+  }
+
+  .sidebar.open {
+    width: 84vw;
+    max-width: 84vw;
+  }
+
+  .sidebar-header {
+    padding: 10px 12px;
+  }
+
+  .nav-item {
+    padding: 11px 14px;
+    gap: 10px;
+  }
+
+  .submenu-item {
+    padding: 9px 14px 9px 30px;
+  }
+
+  .user-name {
+    font-size: 0.82em;
+  }
+
+  .sidebar-version {
+    font-size: 0.68em;
   }
 }

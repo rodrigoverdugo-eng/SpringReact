@@ -533,6 +533,16 @@
   .per-page-selector {
     justify-content: space-between;
   }
+
+  .header-title-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .header-title-row .btn {
+    width: 100%;
+    justify-content: center;
+  }
   
   .pagination {
     gap: 4px;
@@ -541,6 +551,54 @@
   .btn-small {
     padding: 6px 10px;
     font-size: 0.85em;
+  }
+}
+
+@media (max-width: 480px) {
+  .action-buttons {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    width: 100%;
+  }
+
+  .users-table td {
+    padding-left: 52%;
+  }
+}
+
+@media (max-width: 360px) {
+  .header-title-row {
+    gap: 10px;
+  }
+
+  .users-controls {
+    gap: 8px;
+  }
+
+  .search-box {
+    min-width: 0;
+  }
+
+  .search-box input {
+    font-size: 0.88rem;
+  }
+
+  .action-buttons {
+    grid-template-columns: 1fr;
+  }
+
+  .users-table td {
+    padding-left: 46%;
+    font-size: 0.88em;
+  }
+
+  .pagination {
+    gap: 6px;
+  }
+
+  .btn-small {
+    padding: 6px 8px;
+    font-size: 0.8em;
   }
 }
 

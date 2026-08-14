@@ -40,6 +40,17 @@
   transition: border-color 0.2s ease, background 0.2s ease, color 0.2s ease;
 }
 
+@media (max-width: 480px) {
+  .theme-selector {
+    flex-direction: column;
+  }
+
+  .theme-option {
+    width: 100%;
+    min-width: 0;
+  }
+}
+
 .theme-option:hover:not(.theme-option--active) {
   border-color: var(--color-primary);
   color: var(--color-primary);
