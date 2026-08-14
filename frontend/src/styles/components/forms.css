@@ -464,34 +464,39 @@
   }
   
   .users-table td {
-    padding: 8px 0;
+    display: grid;
+    grid-template-columns: minmax(110px, 42%) 1fr;
+    align-items: start;
+    column-gap: 10px;
+    padding: 10px 0;
     text-align: left;
-    position: relative;
-    padding-left: 50%;
+    word-break: break-word;
+    overflow-wrap: anywhere;
   }
   
   .users-table td::before {
     content: attr(data-label);
-    position: absolute;
-    left: 0;
-    width: 45%;
-    padding-right: 10px;
+    position: static;
+    width: auto;
+    padding-right: 0;
     font-weight: 600;
     text-align: left;
   }
   
   .users-table .actions-column {
     width: 100%;
-    padding-left: 0 !important;
+    grid-template-columns: 1fr;
+    row-gap: 8px;
   }
-  
-  .users-table td::before {
-    content: attr(data-label);
+
+  .users-table .actions-column::before {
+    margin-bottom: 2px;
   }
   
   .action-buttons {
     justify-content: flex-start;
-    margin-top: 8px;
+    margin-top: 0;
+    flex-wrap: nowrap;
   }
 }
 
@@ -557,12 +562,8 @@
 @media (max-width: 480px) {
   .action-buttons {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     width: 100%;
-  }
-
-  .users-table td {
-    padding-left: 52%;
   }
 }
 
@@ -584,11 +585,11 @@
   }
 
   .action-buttons {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
   .users-table td {
-    padding-left: 46%;
+    grid-template-columns: minmax(100px, 44%) 1fr;
     font-size: 0.88em;
   }
 

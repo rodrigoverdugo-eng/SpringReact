@@ -24,6 +24,7 @@ Aplicación web empresarial completa con autenticación JWT, sistema de roles y 
 - **Restricción de Acceso**: Solo ADMIN puede gestionar usuarios
 - **Historial de Actividad**: Modal para ver los últimos 20 logins de cada usuario (fecha + IP)
 - **Último Acceso Global**: Columna de último acceso visible en la tabla de usuarios
+- **Tabla Responsive Mejorada**: En móvil, la lista de usuarios se renderiza en tarjetas con pares etiqueta/valor estables (Nombre, Email, etc.) y acciones alineadas
 - **Eliminación en Cascada**: Al eliminar un usuario se eliminan previamente sus registros de `user_login_history` para respetar la restricción de clave foránea
 
 ### 🎨 Interfaz de Usuario
@@ -32,6 +33,7 @@ Aplicación web empresarial completa con autenticación JWT, sistema de roles y 
 - **Login de Dos Paneles**: Panel izquierdo de marca (color corporativo, ícono, tagline) + panel derecho con el formulario; en móvil se adapta a layout vertical
 - **Sidebar Colapsable**: Navegación responsive con toggle integrado en la cabecera
 - **Layout de Gestión**: Sidebar (logo+nav+pie usuario) + Topbar (breadcrumb + usuario/rol)
+- **Topbar Compacto en Scroll (Móvil)**: Al desplazarse, la cabecera reduce contenido y muestra solo la ruta/vista actual para mejorar legibilidad
 - **Versión en Pie del Sidebar**: Número de versión del `pom.xml` mostrado en tiempo de ejecución
 - **Dashboard con Métricas**: Vista de inicio con tarjetas de estadísticas en tiempo real (total de usuarios, activos, inactivos, cambios de contraseña pendientes) para ADMIN
 - **Badges de Estado**: Visualización clara del estado del usuario

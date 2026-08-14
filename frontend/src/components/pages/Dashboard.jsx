@@ -73,6 +73,7 @@ function Dashboard() {
   const [currentUser, setCurrentUser] = useState(null);
   const [currentView, setCurrentView] = useState('home');
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [isHeaderScrolled, setIsHeaderScrolled] = useState(false);
   const navigate = useNavigate();
 
   useInactivityLogout(INACTIVITY_TIMEOUT_MINUTES);
@@ -89,6 +90,17 @@ function Dashboard() {
     AuthService.setupAxiosInterceptor();
   }, [navigate]);
 
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsHeaderScrolled(window.scrollY > 20);
+    };
+
+    handleScroll();
+    window.addEventListener('scroll', handleScroll, { passive: true });
+
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   return (
     <div className="dashboard">
       <Sidebar
@@ -100,7 +112,7 @@ function Dashboard() {
       />
 
       <div className={`dashboard-content ${sidebarOpen ? 'sidebar-open' : 'sidebar-closed'}`}>
-        <div className="dashboard-header">
+        <div className={`dashboard-header ${isHeaderScrolled ? 'is-scrolled' : ''}`}>
           <div className="header-breadcrumb">
             <ChevronRight size={20} className="breadcrumb-icon" />
             <h1>{VIEW_LABELS[currentView] || 'Dashboard'}</h1>
