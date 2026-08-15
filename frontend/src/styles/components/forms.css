@@ -603,6 +603,66 @@
   }
 }
 
+/* Landscape en móviles: forzar layout tipo tarjeta para evitar desorden de columnas */
+@media (orientation: landscape) and (max-height: 500px) and (max-width: 950px) {
+  .users-controls {
+    gap: 10px;
+  }
+
+  .search-box {
+    min-width: 220px;
+  }
+
+  .users-table thead {
+    display: none;
+  }
+
+  .users-table,
+  .users-table tbody,
+  .users-table tr,
+  .users-table td {
+    display: block;
+    width: 100%;
+  }
+
+  .users-table tr {
+    margin-bottom: 12px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    padding: 10px;
+  }
+
+  .users-table td {
+    display: grid;
+    grid-template-columns: minmax(110px, 36%) 1fr;
+    align-items: start;
+    column-gap: 10px;
+    padding: 8px 0;
+    text-align: left;
+    word-break: break-word;
+    overflow-wrap: anywhere;
+  }
+
+  .users-table td::before {
+    content: attr(data-label);
+    font-weight: 600;
+  }
+
+  .users-table .actions-column {
+    width: 100%;
+    grid-template-columns: 1fr;
+    row-gap: 8px;
+  }
+
+  .action-buttons {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+    width: 100%;
+    margin-top: 0;
+  }
+}
+
 /* ========================================
    MODAL
    ======================================== */

@@ -20,16 +20,16 @@ function Profile({ currentUser }) {
             <div className="profile-details">
               <h3 className="profile-name">{currentUser?.name}</h3>
               <div className="profile-field">
-                <Mail size={15} />
+                <Mail size={16} />
                 <span>{currentUser?.email}</span>
               </div>
               <div className="profile-field">
-                <Shield size={15} />
+                <Shield size={16} />
                 <span>{currentUser?.role?.descripcion}</span>
               </div>
               {currentUser?.lastLoginAt && (
                 <div className="profile-field">
-                  <Clock size={15} />
+                  <Clock size={16} />
                   <span>
                     Último acceso:{' '}
                     {new Date(currentUser.lastLoginAt).toLocaleString(APP_LOCALE)}

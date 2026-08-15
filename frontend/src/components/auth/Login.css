@@ -11,7 +11,7 @@
 .login-brand {
   position: relative;
   flex: 0 0 400px;
-  background: #2c3e50;
+  background: var(--color-primary);
   display: flex;
   flex-direction: column;
   justify-content: space-between;

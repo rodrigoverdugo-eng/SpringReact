@@ -39,7 +39,7 @@ function Login() {
     try {
       const response = await AuthService.login(formData.email, formData.password);
 
-      // Apply the theme preference stored in the user's profile
+      // Aplicar la preferencia de tema guardada en el perfil del usuario
       if (response.themePreference) {
         setTheme(response.themePreference === 'dark');
       }

@@ -4,7 +4,7 @@ import ProfileService from '../services/ProfileService';
 const ThemeContext = createContext();
 
 function readInitialTheme() {
-  // Priority: themePreference stored in user profile data (comes from server on login)
+  // Prioridad: preferencia del perfil del usuario (viene del servidor al hacer login)
   try {
     const userStr = localStorage.getItem('user');
     if (userStr) {
@@ -14,7 +14,7 @@ function readInitialTheme() {
       }
     }
   } catch (_) {}
-  // Fallback to standalone 'theme' key
+  // Fallback: clave 'theme' independiente en localStorage
   return localStorage.getItem('theme') === 'dark';
 }
 
@@ -28,7 +28,7 @@ export function ThemeProvider({ children }) {
   const applyTheme = (dark) => {
     document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
     localStorage.setItem('theme', dark ? 'dark' : 'light');
-    // Keep user object in localStorage in sync
+    // Sincronizar preferencia dentro del objeto usuario en localStorage
     try {
       const userStr = localStorage.getItem('user');
       if (userStr) {
@@ -43,13 +43,13 @@ export function ThemeProvider({ children }) {
     const newDark = !isDark;
     setIsDark(newDark);
     applyTheme(newDark);
-    // Persist to server only when logged in (fire and forget)
+    // Persistir en el servidor solo si hay sesión activa (sin esperar respuesta)
     if (localStorage.getItem('user')) {
       ProfileService.updateTheme(newDark ? 'dark' : 'light').catch(() => {});
     }
   };
 
-  // Called after login to apply the server-stored preference immediately
+  // Llamado tras el login para aplicar la preferencia guardada en el servidor
   const setTheme = (dark) => {
     setIsDark(dark);
     applyTheme(dark);
@@ -63,5 +63,7 @@ export function ThemeProvider({ children }) {
 }
 
 export function useTheme() {
-  return useContext(ThemeContext);
+  const context = useContext(ThemeContext);
+  if (!context) throw new Error('useTheme must be used inside ThemeProvider');
+  return context;
 }

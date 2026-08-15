@@ -34,6 +34,7 @@ Aplicación web empresarial completa con autenticación JWT, sistema de roles y 
 - **Sidebar Colapsable**: Navegación responsive con toggle integrado en la cabecera
 - **Layout de Gestión**: Sidebar (logo+nav+pie usuario) + Topbar (breadcrumb + usuario/rol)
 - **Topbar Compacto en Scroll (Móvil)**: Al desplazarse, la cabecera reduce contenido y muestra solo la ruta/vista actual para mejorar legibilidad
+- **Optimización en Horizontal (Móvil)**: En la administración de usuarios, el modo landscape mantiene layout de tarjetas con etiquetas y acciones ordenadas para evitar desalineaciones en Chrome y Edge móvil
 - **Versión en Pie del Sidebar**: Número de versión del `pom.xml` mostrado en tiempo de ejecución
 - **Dashboard con Métricas**: Vista de inicio con tarjetas de estadísticas en tiempo real (total de usuarios, activos, inactivos, cambios de contraseña pendientes) para ADMIN
 - **Badges de Estado**: Visualización clara del estado del usuario

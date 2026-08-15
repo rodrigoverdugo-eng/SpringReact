@@ -43,13 +43,29 @@ export const MENU_ITEMS = [
 ];
 
 /**
- * Etiquetas de breadcrumb para cada vista.
- * Centralizado aquí para mantener sincronizadas Sidebar y Dashboard.
+ * Devuelve la etiqueta de breadcrumb para una vista, derivada de MENU_ITEMS.
+ * Para submenús incluye el nombre del padre: "Padre › Hijo".
  */
-export const VIEW_LABELS = {
-  home:     'Inicio',
-  profile:  'Mi Perfil',
-  users:    'Configuración › Gestión de Usuarios',
-  'change-password': 'Configuración › Cambiar Contraseña',
-  settings: 'Configuración',
-};
+export function getLabelForView(viewId) {
+  for (const item of MENU_ITEMS) {
+    if (item.id === viewId) return item.label;
+    const sub = item.submenu?.find(s => s.id === viewId);
+    if (sub) return `${item.label} › ${sub.label}`;
+  }
+  return viewId;
+}
+
+/**
+ * Indica si un rol tiene acceso a una vista, según las reglas de MENU_ITEMS.
+ * roles: [] significa acceso universal.
+ */
+export function hasMenuAccess(viewId, userRole) {
+  for (const item of MENU_ITEMS) {
+    if (item.id === viewId) {
+      return item.roles.length === 0 || item.roles.includes(userRole);
+    }
+    const sub = item.submenu?.find(s => s.id === viewId);
+    if (sub) return sub.roles.length === 0 || sub.roles.includes(userRole);
+  }
+  return true;
+}

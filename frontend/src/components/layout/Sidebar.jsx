@@ -9,6 +9,14 @@ import './Sidebar.css';
 function Sidebar({ currentView, onViewChange, currentUser, isOpen, setIsOpen }) {
   const [expandedMenu, setExpandedMenu] = useState(null);
   const [appVersion, setAppVersion] = useState(null);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   useEffect(() => {
     InfoService.getVersion()
       .then(setAppVersion)
@@ -51,13 +59,11 @@ function Sidebar({ currentView, onViewChange, currentUser, isOpen, setIsOpen }) 
       }
     } else {
       onViewChange(item.id);
-      if (window.innerWidth <= 768) {
+      if (isMobile) {
         setIsOpen(false);
       }
     }
   };
-
-  const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768;
 
   return (
     <>
@@ -70,7 +76,7 @@ function Sidebar({ currentView, onViewChange, currentUser, isOpen, setIsOpen }) 
         onClick={() => setIsOpen(!isOpen)}
         aria-label={isOpen ? 'Cerrar menú' : 'Abrir menú'}
       >
-        <Menu size={24} />
+        <Menu size={22} />
       </button>
 
       <aside className={`sidebar ${isOpen ? 'open' : 'closed'}`}>
@@ -123,7 +129,7 @@ function Sidebar({ currentView, onViewChange, currentUser, isOpen, setIsOpen }) 
                     className={`submenu-item ${currentView === subItem.id ? 'active' : ''}`}
                     onClick={() => {
                       onViewChange(subItem.id);
-                      if (window.innerWidth <= 768) {
+                      if (isMobile) {
                         setIsOpen(false);
                       }
                     }}
