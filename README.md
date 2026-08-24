@@ -134,9 +134,12 @@ SpringReact/
     │   │   ├── layout/                # Componentes de diseño
     │   │   │   ├── Sidebar.jsx
     │   │   │   └── Sidebar.css
-    │   │   ├── features/              # Módulos CRUD
+    │   │   ├── features/              # Módulos de funcionalidad
+    │   │   │   ├── HomeView.jsx
     │   │   │   ├── UserManagement.jsx
-    │   │   │   └── ChangePasswordPanel.jsx
+    │   │   │   ├── ChangePasswordPanel.jsx
+    │   │   │   ├── Profile.jsx
+    │   │   │   └── Profile.css
     │   │   └── common/                # Utilidades comunes
     │   │       └── PrivateRoute.jsx
     │   ├── services/
@@ -859,15 +862,16 @@ Tests unitarios con **JUnit 5 + Mockito** (sin contexto Spring). Los controllers
 | `JwtService` | `service/JwtServiceTest.java` | 16 |
 | `JwtAuthenticationFilter` | `security/JwtAuthenticationFilterTest.java` | 25 |
 | `RateLimitFilter` | `security/RateLimitFilterTest.java` | 5 |
-| `AuthController` | `controller/AuthControllerTest.java` | 21 |
-| `UserController` | `controller/UserControllerTest.java` | 19 |
+| `AuthController` | `controller/AuthControllerTest.java` | 18 |
+| `UserController` | `controller/UserControllerTest.java` | 12 |
 | `RoleController` | `controller/RoleControllerTest.java` | 2 |
 | `InfoController` | `controller/InfoControllerTest.java` | 1 |
 | `SpaController` | `controller/SpaControllerTest.java` | 1 |
+| `ProfileController` | `controller/ProfileControllerTest.java` | 6 |
 | `DataInitializer` | `config/DataInitializerTest.java` | 4 |
-| `AuthService` | `service/AuthServiceTest.java` | 14 |
+| `AuthService` | `service/AuthServiceTest.java` | 20 |
 | `UserService` | `service/UserServiceTest.java` | 17 |
-| `ProfileService` | `service/ProfileServiceTest.java` | 8 |
+| `ProfileService` | `service/ProfileServiceTest.java` | 6 |
 | `ArchitectureTests` | `ArchitectureTests.java` | 9 |
 | **Total** | | **142** |
 
@@ -1065,10 +1069,11 @@ useInactivityLogout(INACTIVITY_TIMEOUT_MINUTES);
 ### Componentes Principales
 
 **Frontend:**
-- `Dashboard.jsx`: Contenedor principal con gestión de vistas y topbar (breadcrumb + usuario); activa el logout por inactividad con la constante compartida
+- `Dashboard.jsx`: Contenedor principal con gestión de vistas mediante `VIEW_REGISTRY` (mapa `id → componente`) y topbar (breadcrumb + usuario); activa el logout por inactividad con la constante compartida
 - `Sidebar.jsx`: Navegación lateral con toggle integrado, filtrado por roles, usuario y versión en el pie; incluye botón de cambio de tema (sol/luna). Lee la configuración del menú desde `menuConfig.js`
-- `menuConfig.js`: Fuente única de verdad para ítems de menú (`MENU_ITEMS`), título de la aplicación (`APP_TITLE`), tagline del login (`APP_TAGLINE`) y etiquetas de breadcrumb (`VIEW_LABELS`). Permisos definidos con `roles: []` (array); `[]` indica acceso universal
-- `ThemeContext.jsx`: Contexto React para el tema oscuro/claro; provee `isDark` y `toggleTheme`
+- `menuConfig.js`: Fuente única de verdad para ítems de menú (`MENU_ITEMS`), título de la aplicación (`APP_TITLE`), tagline del login (`APP_TAGLINE`), etiquetas de breadcrumb generadas por `getLabelForView()` y control de acceso por `hasMenuAccess()`. Permisos definidos con `roles: []` (array); `[]` indica acceso universal
+- `ThemeContext.jsx`: Contexto React para el tema oscuro/claro; provee `isDark`, `toggleTheme` y `setTheme`; lanza error descriptivo si se usa fuera del `ThemeProvider`
+- `HomeView.jsx`: Vista de inicio con tarjetas de estadísticas en tiempo real (solo ADMIN)
 - `UserManagement.jsx`: CRUD de usuarios con validaciones, modal de historial de actividad y columna de último acceso
 - `ChangePasswordPanel.jsx`: Panel de cambio de contraseña integrado en el dashboard (contraseña actual + nueva + confirmar), con checklist de política en tiempo real
 - `Login.jsx`: Formulario de autenticación
@@ -1268,6 +1273,7 @@ healthcheck:
 ### DevOps
 - [x] Dockerizar aplicación (Dockerfile multi-stage + Docker Compose)
 - [x] CI/CD pipeline (GitHub Actions / Jenkins)
+- [x] Análisis estático de seguridad (CodeQL en GitHub Actions)
 - [ ] Kubernetes manifests
 - [ ] Monitoreo con Prometheus/Grafana
 
