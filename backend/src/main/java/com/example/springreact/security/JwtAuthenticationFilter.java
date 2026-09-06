@@ -1,5 +1,6 @@
 package com.example.springreact.security;
 
+import com.example.springreact.model.User;
 import com.example.springreact.repository.UserRepository;
 import com.example.springreact.service.JwtService;
 import jakarta.servlet.FilterChain;
@@ -8,6 +9,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -66,8 +69,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
           return;
         }
 
-        // Validar token solo si el usuario existe
-        if (userRepository.findByEmail(userEmail).isPresent()
+        // Validar token solo si el usuario existe, está vigente y el token no fue invalidado
+        Optional<User> userOpt = userRepository.findByEmail(userEmail);
+        if (userOpt.isPresent()
+            && Boolean.TRUE.equals(userOpt.get().getVigencia())
+            && isCurrentTokenVersion(jwt, userOpt.get())
             && jwtService.validateToken(jwt, userEmail)) {
           // Extraer rol del token y construir authorities para Spring Security
           String role = jwtService.extractRole(jwt);
@@ -88,6 +94,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     }
 
     filterChain.doFilter(request, response);
+  }
+
+  private boolean isCurrentTokenVersion(String jwt, User user) {
+    return Objects.equals(jwtService.extractTokenVersion(jwt), user.getTokenVersion());
   }
 
   private boolean shouldNotFilter(String path) {

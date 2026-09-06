@@ -10,6 +10,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -86,8 +87,12 @@ public class AuthService {
 
     String accessToken =
         jwtService.generateAccessToken(
-            user.getEmail(), user.getId(), user.getName(), user.getRole().getName());
-    String refreshToken = jwtService.generateRefreshToken(user.getEmail());
+            user.getEmail(),
+            user.getId(),
+            user.getName(),
+            user.getRole().getName(),
+            user.getTokenVersion());
+    String refreshToken = jwtService.generateRefreshToken(user.getEmail(), user.getTokenVersion());
 
     MDC.put("event", "LOGIN_SUCCESS");
     MDC.put("email", user.getEmail());
@@ -112,15 +117,7 @@ public class AuthService {
   }
 
   public Map<String, Object> refreshToken(HttpServletRequest request) {
-    String refreshToken = null;
-    if (request.getCookies() != null) {
-      for (Cookie cookie : request.getCookies()) {
-        if ("refreshToken".equals(cookie.getName())) {
-          refreshToken = cookie.getValue();
-          break;
-        }
-      }
-    }
+    String refreshToken = extractRefreshToken(request);
 
     if (refreshToken == null || refreshToken.isEmpty()) {
       Map<String, Object> error = new HashMap<>();
@@ -156,9 +153,20 @@ public class AuthService {
         return error;
       }
 
+      if (!Objects.equals(jwtService.extractTokenVersion(refreshToken), user.getTokenVersion())) {
+        Map<String, Object> error = new HashMap<>();
+        error.put("status", 401);
+        error.put("message", "Refresh token inválido o expirado");
+        return error;
+      }
+
       String newAccessToken =
           jwtService.generateAccessToken(
-              user.getEmail(), user.getId(), user.getName(), user.getRole().getName());
+              user.getEmail(),
+              user.getId(),
+              user.getName(),
+              user.getRole().getName(),
+              user.getTokenVersion());
 
       Map<String, Object> response = new HashMap<>();
       response.put("accessToken", newAccessToken);
@@ -170,6 +178,21 @@ public class AuthService {
       error.put("status", 401);
       error.put("message", "Error al renovar token");
       return error;
+    }
+  }
+
+  /** Invalida los tokens ya emitidos para el usuario dueño del refresh token recibido. */
+  public void invalidateTokens(HttpServletRequest request) {
+    String refreshToken = extractRefreshToken(request);
+    if (refreshToken == null) {
+      return;
+    }
+    try {
+      userRepository
+          .findByEmail(jwtService.extractEmail(refreshToken))
+          .ifPresent(this::bumpTokenVersion);
+    } catch (Exception e) {
+      // Token ilegible o con firma inválida: no hay sesión que invalidar
     }
   }
 
@@ -209,6 +232,8 @@ public class AuthService {
 
     user.setPassword(passwordEncoder.encode(newPassword));
     user.setRequiresPasswordChange(false);
+    // Invalida las sesiones abiertas con la contraseña anterior
+    user.setTokenVersion(nextTokenVersion(user));
     userRepository.save(user);
 
     MDC.put("event", "PASSWORD_CHANGED");
@@ -217,6 +242,27 @@ public class AuthService {
     MDC.clear();
 
     return null;
+  }
+
+  private String extractRefreshToken(HttpServletRequest request) {
+    if (request.getCookies() == null) {
+      return null;
+    }
+    for (Cookie cookie : request.getCookies()) {
+      if ("refreshToken".equals(cookie.getName())) {
+        return cookie.getValue();
+      }
+    }
+    return null;
+  }
+
+  private void bumpTokenVersion(User user) {
+    user.setTokenVersion(nextTokenVersion(user));
+    userRepository.save(user);
+  }
+
+  private int nextTokenVersion(User user) {
+    return user.getTokenVersion() == null ? 1 : user.getTokenVersion() + 1;
   }
 
   private ResponseCookie createRefreshCookie(String refreshToken) {

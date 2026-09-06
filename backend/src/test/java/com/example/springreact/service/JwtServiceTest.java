@@ -19,18 +19,19 @@ class JwtServiceTest {
 
   @Test
   void generateAccessToken_shouldIncludeAllClaims() {
-    String token = jwtService.generateAccessToken("test@example.com", 1L, "Test User", "ADMIN");
+    String token = jwtService.generateAccessToken("test@example.com", 1L, "Test User", "ADMIN", 0);
 
     assertNotNull(token);
     assertEquals("test@example.com", jwtService.extractEmail(token));
     assertEquals(1L, jwtService.extractUserId(token));
     assertEquals("ADMIN", jwtService.extractRole(token));
     assertEquals("access", jwtService.extractType(token));
+    assertEquals(0, jwtService.extractTokenVersion(token));
   }
 
   @Test
   void generateRefreshToken_shouldHaveRefreshType() {
-    String token = jwtService.generateRefreshToken("test@example.com");
+    String token = jwtService.generateRefreshToken("test@example.com", 0);
 
     assertNotNull(token);
     assertEquals("test@example.com", jwtService.extractEmail(token));
@@ -38,30 +39,40 @@ class JwtServiceTest {
   }
 
   @Test
+  void extractTokenVersion_shouldReturnTokenVersionClaim() {
+    assertEquals(
+        7,
+        jwtService.extractTokenVersion(
+            jwtService.generateAccessToken("user@example.com", 1L, "User", "USER", 7)));
+    assertEquals(
+        7, jwtService.extractTokenVersion(jwtService.generateRefreshToken("user@example.com", 7)));
+  }
+
+  @Test
   void extractEmail_shouldReturnSubject() {
-    String token = jwtService.generateAccessToken("user@example.com", 2L, "User", "USER");
+    String token = jwtService.generateAccessToken("user@example.com", 2L, "User", "USER", 0);
 
     assertEquals("user@example.com", jwtService.extractEmail(token));
   }
 
   @Test
   void extractUserId_shouldReturnUserIdClaim() {
-    String token = jwtService.generateAccessToken("user@example.com", 42L, "User", "USER");
+    String token = jwtService.generateAccessToken("user@example.com", 42L, "User", "USER", 0);
 
     assertEquals(42L, jwtService.extractUserId(token));
   }
 
   @Test
   void extractRole_shouldReturnRoleClaim() {
-    String token = jwtService.generateAccessToken("user@example.com", 1L, "User", "ADMIN");
+    String token = jwtService.generateAccessToken("user@example.com", 1L, "User", "ADMIN", 0);
 
     assertEquals("ADMIN", jwtService.extractRole(token));
   }
 
   @Test
   void extractType_shouldReturnTypeClaim() {
-    String accessToken = jwtService.generateAccessToken("user@example.com", 1L, "User", "USER");
-    String refreshToken = jwtService.generateRefreshToken("user@example.com");
+    String accessToken = jwtService.generateAccessToken("user@example.com", 1L, "User", "USER", 0);
+    String refreshToken = jwtService.generateRefreshToken("user@example.com", 0);
 
     assertEquals("access", jwtService.extractType(accessToken));
     assertEquals("refresh", jwtService.extractType(refreshToken));
@@ -69,14 +80,14 @@ class JwtServiceTest {
 
   @Test
   void extractExpiration_shouldReturnFutureDate() {
-    String token = jwtService.generateAccessToken("user@example.com", 1L, "User", "USER");
+    String token = jwtService.generateAccessToken("user@example.com", 1L, "User", "USER", 0);
 
     assertTrue(jwtService.extractExpiration(token).getTime() > System.currentTimeMillis());
   }
 
   @Test
   void isTokenExpired_shouldReturnFalseForValidToken() {
-    String token = jwtService.generateAccessToken("user@example.com", 1L, "User", "USER");
+    String token = jwtService.generateAccessToken("user@example.com", 1L, "User", "USER", 0);
 
     assertFalse(jwtService.isTokenExpired(token));
   }
@@ -88,14 +99,14 @@ class JwtServiceTest {
 
   @Test
   void validateToken_shouldReturnTrueForValidToken() {
-    String token = jwtService.generateAccessToken("user@example.com", 1L, "User", "USER");
+    String token = jwtService.generateAccessToken("user@example.com", 1L, "User", "USER", 0);
 
     assertTrue(jwtService.validateToken(token, "user@example.com"));
   }
 
   @Test
   void validateToken_shouldReturnFalseForWrongEmail() {
-    String token = jwtService.generateAccessToken("user@example.com", 1L, "User", "USER");
+    String token = jwtService.generateAccessToken("user@example.com", 1L, "User", "USER", 0);
 
     assertFalse(jwtService.validateToken(token, "other@example.com"));
   }
@@ -107,7 +118,7 @@ class JwtServiceTest {
 
   @Test
   void isAccessToken_shouldReturnTrueForAccessToken() {
-    String token = jwtService.generateAccessToken("user@example.com", 1L, "User", "USER");
+    String token = jwtService.generateAccessToken("user@example.com", 1L, "User", "USER", 0);
 
     assertTrue(jwtService.isAccessToken(token));
     assertFalse(jwtService.isRefreshToken(token));
@@ -115,7 +126,7 @@ class JwtServiceTest {
 
   @Test
   void isRefreshToken_shouldReturnTrueForRefreshToken() {
-    String token = jwtService.generateRefreshToken("user@example.com");
+    String token = jwtService.generateRefreshToken("user@example.com", 0);
 
     assertTrue(jwtService.isRefreshToken(token));
     assertFalse(jwtService.isAccessToken(token));

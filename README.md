@@ -115,7 +115,8 @@ SpringReact/
 │   │   │       └── db/
 │   │   │           └── migration/
 │   │   │               ├── V1__create_tables.sql  # Esquema inicial
-│   │   │               └── V2__add_theme_preference_to_users.sql  # Preferencia de tema
+│   │   │               ├── V2__add_theme_preference_to_users.sql  # Preferencia de tema
+│   │   │               └── V3__add_token_version_to_users.sql     # Invalidación de tokens
 │   │   └── test/
 │   └── pom.xml
 │
@@ -292,7 +293,7 @@ Al iniciar la aplicación, se crean automáticamente:
 |--------|----------|-------------|--------|
 | POST | `/api/auth/login` | Iniciar sesión | Público |
 | POST | `/api/auth/refresh` | Renovar access token (via cookie) | Público |
-| POST | `/api/auth/logout` | Cerrar sesión e invalidar cookie | Público |
+| POST | `/api/auth/logout` | Cerrar sesión, invalidar tokens y cookie | Público |
 | POST | `/api/auth/change-password` | Cambiar contraseña | Autenticado |
 
 ### Usuarios
@@ -625,6 +626,7 @@ En desarrollo local (`http://localhost`) la variable vale `false`; en producció
 - **Roles en Token**: El rol del usuario se incluye en el JWT
 - **Encriptación**: BCrypt con fuerza 10 para contraseñas
 - **Secreto externalizado**: La clave de firma JWT se lee de la variable de entorno `JWT_SECRET` (obligatoria; no tiene valor por defecto). Se define en un `.env` local no versionado (plantilla en `.env.example`) o en las variables del entorno de despliegue
+- **Invalidación de tokens**: Cada usuario tiene un `token_version` que se incluye como claim en los tokens emitidos. El filtro JWT y el endpoint de refresh rechazan los tokens cuya versión no sea la vigente, de modo que el logout, el cambio de contraseña, la desactivación del usuario y el cambio de rol dejan sin efecto los tokens ya emitidos
 
 ### Características de Seguridad
 
@@ -663,7 +665,7 @@ Definidas en `SecurityFilterChain` con sesión **stateless** (sin sesión HTTP):
 |--------|--------|-------------|
 | `/api/auth/login` | Público | Inicio de sesión |
 | `/api/auth/refresh` | Público | Renovación de token (lee cookie httpOnly) |
-| `/api/auth/logout` | Público | Invalidar cookie de refresh token |
+| `/api/auth/logout` | Público | Invalidar los tokens emitidos y la cookie de refresh |
 | `/api/users/**` | Solo ADMIN | Gestión de usuarios (CRUD, historial) |
 | `/api/**` | Autenticado (JWT) | Resto de endpoints de la API |
 | `/**` (cualquier otra) | Permitido | Rutas SPA servidas por `SpaController` → `index.html` |
@@ -993,7 +995,7 @@ Cobertura actual de los módulos incluidos:
 7. Al expirar el Access Token, el interceptor de Axios llama a `/api/auth/refresh`; el browser envía la cookie automáticamente
 8. Backend valida la cookie y devuelve un nuevo Access Token en el body
 9. Al recargar la página, `PrivateRoute` primero verifica si la sesión venció por inactividad; si aún es válida, entonces llama a `/refresh` para restaurar la sesión
-10. Logout llama a `/api/auth/logout` → backend limpia la cookie (`Max-Age=0`) → frontend borra datos de `localStorage`
+10. Logout llama a `/api/auth/logout` → backend incrementa `token_version` (invalida los tokens emitidos) y limpia la cookie (`Max-Age=0`) → frontend borra datos de `localStorage`
 
 ### Logging Estructurado
 
