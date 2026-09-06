@@ -94,9 +94,9 @@ class AuthServiceTest {
     when(userRepository.findByEmail("test@example.com")).thenReturn(Optional.of(user));
     when(passwordEncoder.matches("correctpass", "encoded")).thenReturn(true);
     when(loginHistoryRepository.findTopByUserIdOrderByLoginAtDesc(1L)).thenReturn(Optional.empty());
-    when(jwtService.generateAccessToken("test@example.com", 1L, "Test User", "ADMIN"))
+    when(jwtService.generateAccessToken("test@example.com", 1L, "Test User", "ADMIN", 0))
         .thenReturn("access-token");
-    when(jwtService.generateRefreshToken("test@example.com")).thenReturn("refresh-token");
+    when(jwtService.generateRefreshToken("test@example.com", 0)).thenReturn("refresh-token");
 
     Map<String, Object> result = authService.login("test@example.com", "correctpass", request);
 
@@ -124,9 +124,9 @@ class AuthServiceTest {
     when(passwordEncoder.matches("correctpass", "encoded")).thenReturn(true);
     when(loginHistoryRepository.findTopByUserIdOrderByLoginAtDesc(1L))
         .thenReturn(Optional.of(history));
-    when(jwtService.generateAccessToken(anyString(), any(), anyString(), anyString()))
+    when(jwtService.generateAccessToken(anyString(), any(), anyString(), anyString(), any()))
         .thenReturn("access-token");
-    when(jwtService.generateRefreshToken(anyString())).thenReturn("refresh-token");
+    when(jwtService.generateRefreshToken(anyString(), any())).thenReturn("refresh-token");
 
     Map<String, Object> result =
         authService.login("test@example.com", "correctpass", mock(HttpServletRequest.class));
@@ -207,7 +207,8 @@ class AuthServiceTest {
     when(jwtService.isTokenExpired("valid-refresh-token")).thenReturn(false);
     when(jwtService.extractEmail("valid-refresh-token")).thenReturn("user@example.com");
     when(userRepository.findByEmail("user@example.com")).thenReturn(Optional.of(user));
-    when(jwtService.generateAccessToken("user@example.com", 2L, "User", "USER"))
+    when(jwtService.extractTokenVersion("valid-refresh-token")).thenReturn(0);
+    when(jwtService.generateAccessToken("user@example.com", 2L, "User", "USER", 0))
         .thenReturn("new-access-token");
     Map<String, Object> result = authService.refreshToken(request);
     assertEquals("new-access-token", result.get("accessToken"));
@@ -269,6 +270,60 @@ class AuthServiceTest {
     User saved = userCaptor.getValue();
     assertEquals("new-encoded", saved.getPassword());
     assertFalse(saved.getRequiresPasswordChange());
+    assertEquals(1, saved.getTokenVersion());
+  }
+
+  // --- INVALIDACIÓN DE TOKENS ---
+
+  @Test
+  void refreshToken_shouldReturn401WhenTokenVersionIsStale() {
+    User user = new User("User", "user@example.com", "encoded", userRole);
+    user.setId(2L);
+    user.setTokenVersion(3);
+    MockHttpServletRequest request = new MockHttpServletRequest();
+    request.setCookies(new Cookie("refreshToken", "old-refresh-token"));
+    when(jwtService.isRefreshToken("old-refresh-token")).thenReturn(true);
+    when(jwtService.isTokenExpired("old-refresh-token")).thenReturn(false);
+    when(jwtService.extractEmail("old-refresh-token")).thenReturn("user@example.com");
+    when(userRepository.findByEmail("user@example.com")).thenReturn(Optional.of(user));
+    when(jwtService.extractTokenVersion("old-refresh-token")).thenReturn(2);
+
+    Map<String, Object> result = authService.refreshToken(request);
+
+    assertEquals(401, result.get("status"));
+    assertEquals("Refresh token inválido o expirado", result.get("message"));
+  }
+
+  @Test
+  void invalidateTokens_shouldBumpTokenVersion() {
+    User user = new User("User", "user@example.com", "encoded", userRole);
+    user.setTokenVersion(1);
+    MockHttpServletRequest request = new MockHttpServletRequest();
+    request.setCookies(new Cookie("refreshToken", "valid-refresh-token"));
+    when(jwtService.extractEmail("valid-refresh-token")).thenReturn("user@example.com");
+    when(userRepository.findByEmail("user@example.com")).thenReturn(Optional.of(user));
+
+    authService.invalidateTokens(request);
+
+    verify(userRepository).save(userCaptor.capture());
+    assertEquals(2, userCaptor.getValue().getTokenVersion());
+  }
+
+  @Test
+  void invalidateTokens_shouldDoNothingWithoutCookie() {
+    authService.invalidateTokens(new MockHttpServletRequest());
+    verify(userRepository, never()).save(any());
+  }
+
+  @Test
+  void invalidateTokens_shouldDoNothingWhenTokenIsUnreadable() {
+    MockHttpServletRequest request = new MockHttpServletRequest();
+    request.setCookies(new Cookie("refreshToken", "garbage"));
+    when(jwtService.extractEmail("garbage")).thenThrow(new RuntimeException("firma inválida"));
+
+    authService.invalidateTokens(request);
+
+    verify(userRepository, never()).save(any());
   }
 
   // --- CLIENT IP ---
@@ -283,9 +338,9 @@ class AuthServiceTest {
     when(userRepository.findByEmail("test@example.com")).thenReturn(Optional.of(user));
     when(passwordEncoder.matches("pass", "encoded")).thenReturn(true);
     when(loginHistoryRepository.findTopByUserIdOrderByLoginAtDesc(1L)).thenReturn(Optional.empty());
-    when(jwtService.generateAccessToken(anyString(), any(), anyString(), anyString()))
+    when(jwtService.generateAccessToken(anyString(), any(), anyString(), anyString(), any()))
         .thenReturn("access-token");
-    when(jwtService.generateRefreshToken(anyString())).thenReturn("refresh-token");
+    when(jwtService.generateRefreshToken(anyString(), any())).thenReturn("refresh-token");
 
     authService.login("test@example.com", "pass", request);
     verify(loginHistoryRepository).save(loginHistoryCaptor.capture());
@@ -302,9 +357,9 @@ class AuthServiceTest {
     when(userRepository.findByEmail("test@example.com")).thenReturn(Optional.of(user));
     when(passwordEncoder.matches("pass", "encoded")).thenReturn(true);
     when(loginHistoryRepository.findTopByUserIdOrderByLoginAtDesc(1L)).thenReturn(Optional.empty());
-    when(jwtService.generateAccessToken(anyString(), any(), anyString(), anyString()))
+    when(jwtService.generateAccessToken(anyString(), any(), anyString(), anyString(), any()))
         .thenReturn("access-token");
-    when(jwtService.generateRefreshToken(anyString())).thenReturn("refresh-token");
+    when(jwtService.generateRefreshToken(anyString(), any())).thenReturn("refresh-token");
 
     authService.login("test@example.com", "pass", request);
     verify(loginHistoryRepository).save(loginHistoryCaptor.capture());

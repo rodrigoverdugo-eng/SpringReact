@@ -101,6 +101,7 @@ class JwtAuthenticationFilterTest {
     when(jwtService.extractEmail(token)).thenReturn(email);
     when(jwtService.isAccessToken(token)).thenReturn(true);
     when(userRepository.findByEmail(email)).thenReturn(Optional.of(user));
+    when(jwtService.extractTokenVersion(token)).thenReturn(0);
     when(jwtService.validateToken(token, email)).thenReturn(true);
     when(jwtService.extractRole(token)).thenReturn("USER");
 
@@ -124,6 +125,7 @@ class JwtAuthenticationFilterTest {
     when(jwtService.extractEmail(token)).thenReturn(email);
     when(jwtService.isAccessToken(token)).thenReturn(true);
     when(userRepository.findByEmail(email)).thenReturn(Optional.of(user));
+    when(jwtService.extractTokenVersion(token)).thenReturn(0);
     when(jwtService.validateToken(token, email)).thenReturn(true);
     when(jwtService.extractRole(token)).thenReturn("ADMIN");
 
@@ -179,7 +181,47 @@ class JwtAuthenticationFilterTest {
     when(jwtService.extractEmail(token)).thenReturn(email);
     when(jwtService.isAccessToken(token)).thenReturn(true);
     when(userRepository.findByEmail(email)).thenReturn(Optional.of(user));
+    when(jwtService.extractTokenVersion(token)).thenReturn(0);
     when(jwtService.validateToken(token, email)).thenReturn(false);
+
+    filter.doFilterInternal(request, response, filterChain);
+
+    verify(filterChain).doFilter(request, response);
+    assertNull(SecurityContextHolder.getContext().getAuthentication());
+  }
+
+  @Test
+  void shouldNotAuthenticateWhenUserIsInactive() throws Exception {
+    String token = "valid-access-token";
+    String email = "user@example.com";
+    User user = new User("User", email, "password", new Role("USER"));
+    user.setVigencia(false);
+
+    when(request.getRequestURI()).thenReturn("/api/users");
+    when(request.getHeader("Authorization")).thenReturn("Bearer " + token);
+    when(jwtService.extractEmail(token)).thenReturn(email);
+    when(jwtService.isAccessToken(token)).thenReturn(true);
+    when(userRepository.findByEmail(email)).thenReturn(Optional.of(user));
+
+    filter.doFilterInternal(request, response, filterChain);
+
+    verify(filterChain).doFilter(request, response);
+    assertNull(SecurityContextHolder.getContext().getAuthentication());
+  }
+
+  @Test
+  void shouldNotAuthenticateWhenTokenVersionIsStale() throws Exception {
+    String token = "revoked-access-token";
+    String email = "user@example.com";
+    User user = new User("User", email, "password", new Role("USER"));
+    user.setTokenVersion(2);
+
+    when(request.getRequestURI()).thenReturn("/api/users");
+    when(request.getHeader("Authorization")).thenReturn("Bearer " + token);
+    when(jwtService.extractEmail(token)).thenReturn(email);
+    when(jwtService.isAccessToken(token)).thenReturn(true);
+    when(userRepository.findByEmail(email)).thenReturn(Optional.of(user));
+    when(jwtService.extractTokenVersion(token)).thenReturn(1);
 
     filter.doFilterInternal(request, response, filterChain);
 
@@ -332,6 +374,7 @@ class JwtAuthenticationFilterTest {
     when(jwtService.extractEmail(token)).thenReturn(email);
     when(jwtService.isAccessToken(token)).thenReturn(true);
     when(userRepository.findByEmail(email)).thenReturn(Optional.of(user));
+    when(jwtService.extractTokenVersion(token)).thenReturn(0);
     when(jwtService.validateToken(token, email)).thenReturn(true);
     when(jwtService.extractRole(token)).thenReturn(null);
 

@@ -82,8 +82,13 @@ public class UserService {
         return "El email ya está registrado";
       }
     }
+    boolean invalidateTokens = false;
     user.setName(userDetails.getName());
     user.setEmail(userDetails.getEmail());
+    if (Boolean.FALSE.equals(userDetails.getVigencia())
+        && !Boolean.FALSE.equals(user.getVigencia())) {
+      invalidateTokens = true;
+    }
     user.setVigencia(userDetails.getVigencia());
     if (userDetails.getRequiresPasswordChange() != null) {
       user.setRequiresPasswordChange(userDetails.getRequiresPasswordChange());
@@ -93,6 +98,9 @@ public class UserService {
       if (roleId != null) {
         Role role = roleRepository.findById(roleId).orElse(null);
         if (role != null) {
+          if (!Objects.equals(role.getId(), user.getRole().getId())) {
+            invalidateTokens = true;
+          }
           user.setRole(role);
         }
       }
@@ -102,6 +110,11 @@ public class UserService {
         return PasswordValidator.ERROR_MESSAGE;
       }
       user.setPassword(passwordEncoder.encode(userDetails.getPassword()));
+      invalidateTokens = true;
+    }
+    // Desactivar, cambiar de rol o resetear la contraseña deja sin efecto los tokens vigentes
+    if (invalidateTokens) {
+      user.setTokenVersion(user.getTokenVersion() == null ? 1 : user.getTokenVersion() + 1);
     }
     userRepository.save(user);
     MDC.put("event", "USER_UPDATED");

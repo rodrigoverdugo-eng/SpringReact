@@ -168,6 +168,34 @@ class UserServiceTest {
     assertFalse(saved.getVigencia());
     assertTrue(saved.getRequiresPasswordChange());
     assertEquals("encoded-new", saved.getPassword());
+    assertEquals(1, saved.getTokenVersion());
+  }
+
+  @Test
+  void updateUser_shouldInvalidateTokensWhenRoleChanges() {
+    User updatedDetails = new User("Admin", "admin@example.com", null, userRole);
+    when(userRepository.findById(1L)).thenReturn(Optional.of(adminUser));
+    when(roleRepository.findById(2L)).thenReturn(Optional.of(userRole));
+    when(userRepository.save(any(User.class))).thenAnswer(inv -> inv.getArgument(0));
+
+    userService.updateUser(1L, updatedDetails);
+
+    verify(userRepository).save(userCaptor.capture());
+    assertEquals(1, userCaptor.getValue().getTokenVersion());
+  }
+
+  @Test
+  void updateUser_shouldInvalidateTokensWhenDeactivated() {
+    User updatedDetails = new User("Admin", "admin@example.com", null, adminRole);
+    updatedDetails.setVigencia(false);
+    when(userRepository.findById(1L)).thenReturn(Optional.of(adminUser));
+    when(roleRepository.findById(1L)).thenReturn(Optional.of(adminRole));
+    when(userRepository.save(any(User.class))).thenAnswer(inv -> inv.getArgument(0));
+
+    userService.updateUser(1L, updatedDetails);
+
+    verify(userRepository).save(userCaptor.capture());
+    assertEquals(1, userCaptor.getValue().getTokenVersion());
   }
 
   @Test
@@ -178,6 +206,7 @@ class UserServiceTest {
     userService.updateUser(1L, updatedDetails);
     verify(userRepository).save(userCaptor.capture());
     assertEquals("encoded", userCaptor.getValue().getPassword());
+    assertEquals(0, userCaptor.getValue().getTokenVersion());
   }
 
   @Test

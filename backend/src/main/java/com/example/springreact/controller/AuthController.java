@@ -55,7 +55,8 @@ public class AuthController {
   }
 
   @PostMapping("/logout")
-  public ResponseEntity<?> logout(HttpServletResponse response) {
+  public ResponseEntity<?> logout(HttpServletRequest request, HttpServletResponse response) {
+    authService.invalidateTokens(request);
     response.addHeader(HttpHeaders.SET_COOKIE, authService.createLogoutCookie().toString());
     return ResponseEntity.ok(Map.of("message", "Logout exitoso"));
   }

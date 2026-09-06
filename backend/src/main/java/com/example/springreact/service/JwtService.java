@@ -27,19 +27,22 @@ public class JwtService {
   // Refresh token: 7 días
   private final long REFRESH_TOKEN_VALIDITY = 7 * 24 * 60 * 60 * 1000; // 7 días
 
-  public String generateAccessToken(String email, Long userId, String name, String role) {
+  public String generateAccessToken(
+      String email, Long userId, String name, String role, Integer tokenVersion) {
     Map<String, Object> claims = new HashMap<>();
     claims.put("userId", userId);
     claims.put("name", name);
     claims.put("role", role);
     claims.put("type", "access");
+    claims.put("tokenVersion", tokenVersion);
 
     return createToken(claims, email, ACCESS_TOKEN_VALIDITY);
   }
 
-  public String generateRefreshToken(String email) {
+  public String generateRefreshToken(String email, Integer tokenVersion) {
     Map<String, Object> claims = new HashMap<>();
     claims.put("type", "refresh");
+    claims.put("tokenVersion", tokenVersion);
 
     return createToken(claims, email, REFRESH_TOKEN_VALIDITY);
   }
@@ -71,6 +74,10 @@ public class JwtService {
 
   public String extractType(String token) {
     return extractAllClaims(token).get("type", String.class);
+  }
+
+  public Integer extractTokenVersion(String token) {
+    return extractAllClaims(token).get("tokenVersion", Integer.class);
   }
 
   public Date extractExpiration(String token) {

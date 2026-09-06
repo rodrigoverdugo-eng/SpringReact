@@ -188,10 +188,12 @@ class AuthControllerTest {
             .build();
     when(authService.createLogoutCookie()).thenReturn(cookie);
 
+    MockHttpServletRequest request = new MockHttpServletRequest();
     MockHttpServletResponse response = new MockHttpServletResponse();
-    ResponseEntity<?> result = controller.logout(response);
+    ResponseEntity<?> result = controller.logout(request, response);
 
     assertEquals(HttpStatus.OK, result.getStatusCode());
+    verify(authService).invalidateTokens(request);
     String setCookie = response.getHeader("Set-Cookie");
     assertNotNull(setCookie);
     assertTrue(setCookie.contains("refreshToken="));
