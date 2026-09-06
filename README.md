@@ -190,12 +190,15 @@ SpringReact/
 Levanta la aplicación completa (PostgreSQL + App) con un solo comando:
 
 ```bash
-# Crear el archivo .env con el secreto JWT
-echo "JWT_SECRET=<clave-base64-segura>" > .env
+# Crear el archivo .env a partir de la plantilla y generar el secreto JWT
+cp .env.example .env
+echo "JWT_SECRET=$(openssl rand -base64 32)" >> .env
 
 # Construir e iniciar todos los servicios
 docker compose up --build
 ```
+
+> ⚠️ El archivo `.env` contiene el secreto de firma de los JWT y está en `.gitignore`: no debe versionarse. Si alguna vez se sube al repositorio, hay que rotar `JWT_SECRET` en todos los entornos y purgarlo del historial de git.
 
 La aplicación estará disponible en: **`http://localhost:8081`**
 
@@ -206,7 +209,7 @@ La aplicación estará disponible en: **`http://localhost:8081`**
 
 > **Nota:** Para conectarte desde un cliente SQL externo (DBeaver, etc.) usa `localhost:5433`. La comunicación interna entre contenedores usa `postgres:5432`.
 
-**Variables de entorno (`.env`):**
+**Variables de entorno (`.env`, ver plantilla en `.env.example`):**
 ```env
 # Obligatorio: clave de firma JWT (sin valor por defecto)
 JWT_SECRET=<clave-base64-segura-minimo-32-bytes>
@@ -621,7 +624,7 @@ En desarrollo local (`http://localhost`) la variable vale `false`; en producció
 - **Refresh Token**: Válido por 7 días (solo en cookie httpOnly)
 - **Roles en Token**: El rol del usuario se incluye en el JWT
 - **Encriptación**: BCrypt con fuerza 10 para contraseñas
-- **Secreto externalizado**: La clave de firma JWT se lee de la variable de entorno `JWT_SECRET` (obligatoria; no tiene valor por defecto)
+- **Secreto externalizado**: La clave de firma JWT se lee de la variable de entorno `JWT_SECRET` (obligatoria; no tiene valor por defecto). Se define en un `.env` local no versionado (plantilla en `.env.example`) o en las variables del entorno de despliegue
 
 ### Características de Seguridad
 
